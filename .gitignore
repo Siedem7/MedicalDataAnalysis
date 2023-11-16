@@ -34,3 +34,4 @@ yarn-error.log*
 /dataSources/
 /dataSources.local.xml
 /backend/venv
+backend/__pycache__
