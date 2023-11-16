@@ -2,6 +2,8 @@ from flask_cors import CORS
 from flask import Flask,  jsonify, request, abort
 from database_models import db, User
 
+from functions import hash_password, validate_password, validate_email, generate_token, get_id_from_token
+
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project.db"
 db.init_app(app)
