@@ -6,7 +6,7 @@ from sqlalchemy.exc import NoResultFound
 
 from database_models import db, User
 
-from functions import hash_password, validate_password, validate_email, generate_token, get_id_from_token
+from functions import hash_password, validate_password, validate_email, generate_token, get_id_from_token, authorize
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project.db"
@@ -37,16 +37,12 @@ def login_user():
 @app.route("/permissions")
 def get_permissions():
     token = request.headers.get("Authorization")
-    if token is None or token[:7] != "Bearer ":
-        abort(401, description="Invalid token.")
-
-    user_id = get_id_from_token(token[7:])
-
-    try:
-        user = db.session.execute(db.select(User).filter_by(id=user_id)).scalar_one()
-    except NoResultFound:
-        abort(401, description="No user with provided token.")
-
+    status, result = authorize(token)
+    
+    if status != 200:
+        abort(status, description=result)
+    
+    user = result
     return jsonify({"permissions": [permission.name for permission in user.groups.permissions]})
 
 

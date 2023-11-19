@@ -4,6 +4,8 @@ import jwt
 from datetime import datetime, timedelta
 import secrets
 import string
+from sqlalchemy.exc import NoResultFound
+from database_models import db, User, Group, Permission
 
 # USE PYDOC TO GENERATE DOCUMENTATION
 # CHANGE TEMPORARY COMMENTS TO DOCSTRINGS
@@ -65,3 +67,34 @@ def get_id_from_token(token):
     except jwt.InvalidTokenError:
         return 'Invalid token. Please log in again.'
 
+
+def authorize(token):
+    if token is None or token[:7] != "Bearer ":
+        return (401, "Invalid token.")
+
+    user_id = get_id_from_token(token[7:])
+
+    try:
+        user = db.session.execute(db.select(User).filter_by(id=user_id)).scalar_one()
+    except NoResultFound:
+        return (401, "No user with provided token.")
+    
+    return (200, user)
+
+
+def authorize(token, permissions):
+    if token is None or token[:7] != "Bearer ":
+        return (401, "Invalid token.")
+
+    user_id = get_id_from_token(token[7:])
+
+    try:
+        user = db.session.execute(db.select(User).filter_by(id=user_id)).scalar_one()
+    except NoResultFound:
+        return (401, "No user with provided token.")
+    
+    for permission in permissions:
+        if permission not in [permission.name for permission in user.groups.permissions]:
+            return (403, "No permission to access this feature.")
+    
+    return (200, user)
