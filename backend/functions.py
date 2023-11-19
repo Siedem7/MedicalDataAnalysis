@@ -25,7 +25,7 @@ def validate_password(password):
     return True
 
 
-# Check if emial is valid
+# Check if email is valid
 # Uses regex
 def validate_email(email):
     return re.search(r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@" +

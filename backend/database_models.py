@@ -7,6 +7,7 @@ import datetime
 
 db = SQLAlchemy()
 
+
 class User(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     login: Mapped[str] = mapped_column(String, unique=True, nullable=False)
@@ -18,7 +19,7 @@ class User(db.Model):
     groups = relationship("Group", backref="users")
 
 
-class PredictionModel(db.Model):    
+class PredictionModel(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     description: Mapped[str] = mapped_column(String, nullable=False)
     configuration: Mapped[str] = mapped_column(String, nullable=False)
@@ -38,8 +39,6 @@ class File(db.Model):
     path: Mapped[str] = mapped_column(String, nullable=False)
     user: Mapped[int] = mapped_column(Integer, sa.ForeignKey("user.id"))
     users = relationship("User", backref="files")
-
-
 
 
 class Group(db.Model):
