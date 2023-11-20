@@ -70,31 +70,28 @@ def get_id_from_token(token):
 
 def authorize(token):
     if token is None or token[:7] != "Bearer ":
-        return (401, "Invalid token.")
+        return 401, "Invalid token."
 
     user_id = get_id_from_token(token[7:])
 
     try:
         user = db.session.execute(db.select(User).filter_by(id=user_id)).scalar_one()
     except NoResultFound:
-        return (401, "No user with provided token.")
+        return 401, "No user with provided token."
     
-    return (200, user)
+    return 200, user
 
 
-def authorize(token, permissions):
-    if token is None or token[:7] != "Bearer ":
-        return (401, "Invalid token.")
+def authorize_permissions(token, permissions):
+    status, result = authorize(token)
 
-    user_id = get_id_from_token(token[7:])
+    if status != 200:
+        return status, result
 
-    try:
-        user = db.session.execute(db.select(User).filter_by(id=user_id)).scalar_one()
-    except NoResultFound:
-        return (401, "No user with provided token.")
-    
+    user = result
+
     for permission in permissions:
         if permission not in [permission.name for permission in user.groups.permissions]:
-            return (403, "No permission to access this feature.")
+            return 403, "No permission to access this feature."
     
-    return (200, user)
+    return 200, user
