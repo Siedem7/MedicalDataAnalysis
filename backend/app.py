@@ -3,11 +3,12 @@ import datetime
 
 from flask_cors import CORS
 from flask import Flask,  jsonify, request, abort
-from sqlalchemy.exc import NoResultFound, ArgumentError
+from sqlalchemy.exc import NoResultFound, ArgumentError, IntegrityError
 
 from database_models import db, User
 
-from functions import hash_password, validate_password, validate_email, generate_token, get_id_from_token, authorize
+from functions import hash_password, validate_password, validate_email, generate_token, get_id_from_token, authorize, \
+    authorize_permissions
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project.db"
@@ -45,8 +46,16 @@ def get_permissions():
     
     user = result
     return jsonify({"permissions": [permission.name for permission in user.groups.permissions]})
-@app.route("/create", methods=["POST"])
+
+
+@app.route("/create_user", methods=["POST"])
 def create_user():
+    token = request.headers.get("Authorization")
+    status, result = authorize_permissions(token,["CREATE_USER_ACCOUNT"])
+
+    if status != 200:
+        abort(status, description=result)
+
     login = request.json["login"]
     password = request.json["password"]
     group_id = request.json["group"]
@@ -57,9 +66,11 @@ def create_user():
               group=group_id)
         db.session.add(user)
         db.session.commit()
-        return jsonify({"create": user })
-    except ArgumentError:
-        abort(500, description="User creation failed.")
+    except IntegrityError:
+        abort(409, description="User with that login already exists.")
+
+    return jsonify("Successfuly created user")
+
 
 if __name__ == "__main__":
     with app.app_context():
