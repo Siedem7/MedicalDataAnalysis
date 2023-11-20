@@ -1,8 +1,9 @@
 import datetime
 
+
 from flask_cors import CORS
 from flask import Flask,  jsonify, request, abort
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound, ArgumentError
 
 from database_models import db, User
 
@@ -44,7 +45,21 @@ def get_permissions():
     
     user = result
     return jsonify({"permissions": [permission.name for permission in user.groups.permissions]})
-
+@app.route("/create", methods=["POST"])
+def create_user():
+    login = request.json["login"]
+    password = request.json["password"]
+    group_id = request.json["group"]
+    try:
+        user =User(login=login,
+              password=hash_password(password),
+              password_expire_date=datetime.datetime.utcnow() + datetime.timedelta(days=30),
+              group=group_id)
+        db.session.add(user)
+        db.session.commit()
+        return jsonify({"create": user })
+    except ArgumentError:
+        abort(500, description="User creation failed.")
 
 if __name__ == "__main__":
     with app.app_context():
