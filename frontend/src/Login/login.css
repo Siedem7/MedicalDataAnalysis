@@ -1,12 +1,16 @@
 .container{
     margin: 20vh auto;
     width: 30vw;
-    border: 1px solid #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 0 10px #ffffff;
+    border: 2px solid #ffffee;
+    border-radius: 15px;
+    box-shadow: 0 0 25px #5c5c2a;
     font-size: 24px;
     min-width: 400px;
     max-width: 700px;
+}
+
+label, input, button{
+    display: block;
 }
 
 label, input {
@@ -19,26 +23,33 @@ label{
 
 input {
     padding: 0.5em;
-    background-color:#2e2525;
+    background-color:#404040;
     color:#ffffff;
     border: none;
     font-size: 16px;
+    font-family: inherit;
 }
 
 button {
     width: 50%;
-    background-color: #2e2525;
+    background-color: #202020;
     color: #ffffff;
     padding: 0.5em;
-    margin: 0 auto;
+    margin: 60px auto 0 auto;
     font-size: 16px;
+    border-radius: 10px;
+    border: 1px solid #ffffee;
+    font-family: inherit;
+    font-size: 19px;
 }
 
-label, input, button{
-    display: block;
+button:hover{
+    cursor: pointer;
+    filter:invert(10%);
 }
+
 
 .input-line{
    width: 60%;
-   margin: 50px auto;
+   margin: 30px auto;
 }

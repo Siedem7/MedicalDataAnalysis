@@ -24,7 +24,7 @@ export function loginForm(login: string, password: string) {
         window.location.href = '/'
       }
       else {
-        alert('Wrong login or password')
+        alert('Wrong login or password.')
       }
     })
     .catch(error => console.log('error', error));
