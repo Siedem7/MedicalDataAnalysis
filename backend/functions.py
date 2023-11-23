@@ -95,3 +95,40 @@ def authorize_permissions(token, permissions):
             return 403, "No permission to access this feature."
     
     return 200, user
+
+
+def initialize_database():
+    user1 = User(login="admin",
+                 password=hash_password("admin"),
+                 password_expire_date=datetime.utcnow() + timedelta(days=30),
+                 group=1)
+
+    group1 = Group(name="admin")
+    group2 = Group(name="analyst")
+    group3 = Group(name="medical_staff")
+
+    permission1 = Permission(name="DELETE_USER_ACCOUNT")
+    permission2 = Permission(name="UPDATE_USER_ACCOUNT")
+    permission3 = Permission(name="CREATE_USER_ACCOUNT")
+    permission4 = Permission(name="MANAGE_PASSWORDS_POLICY")
+    permission5 = Permission(name="CREATE_MODEL")
+    permission6 = Permission(name="MANAGE_FILE")
+    permission7 = Permission(name="VIEW_STATISTICS")
+    permission8 = Permission(name="USE_MODEL")
+
+    group1.permissions.append(permission1)
+    group1.permissions.append(permission2)
+    group1.permissions.append(permission3)
+    group1.permissions.append(permission4)
+    group2.permissions.append(permission5)
+    group2.permissions.append(permission6)
+    group2.permissions.append(permission7)
+    group3.permissions.append(permission7)
+    group3.permissions.append(permission8)
+
+    db.session.add(user1)
+    db.session.add_all([group1, group2, group3])
+    db.session.add_all([permission1, permission2, permission3, permission4,
+                        permission5, permission6, permission7, permission8])
+
+    db.session.commit()
