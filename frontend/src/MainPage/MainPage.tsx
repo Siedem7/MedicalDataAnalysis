@@ -1,21 +1,25 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { getPermissions } from '../Utils/ApiUtils';
 
 
 export default function MainPage() {
-  const [token, setToken] = React.useState('');
+  let token = localStorage.getItem('token') as string
+  const [permissions, setPermissions] = useState([""]);
 
-  if (localStorage.getItem('token') === null) {
+  if (token === null) {
     window.location.href = '/login'
   }
- 
-  setToken(localStorage.getItem('token') as string)
-  let permissions = getPermissions(token)
-
+  
+  if (permissions[0] === "") {
+    getPermissions(token).then((result) => {
+      setPermissions(result)
+    });
+  }
 
   return (
     <>
-      <h1>działa</h1>
+      <h1>test</h1>
+      <h1>{permissions.map((item) => <h1>{item}</h1>)}</h1>
     </>
   )
 

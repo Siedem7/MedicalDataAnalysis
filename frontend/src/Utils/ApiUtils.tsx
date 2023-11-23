@@ -36,7 +36,7 @@ export function logout() {
   window.location.href = '/login'
 }
 
-export function getPermissions(token: string) {
+export async function getPermissions(token: string): Promise<string[]> {
   var myHeaders = new Headers();
   myHeaders.append("Authorization", "Bearer " + token);
 
@@ -44,19 +44,20 @@ export function getPermissions(token: string) {
     method: 'GET',
     headers: myHeaders,
   };
-let permissions
-fetch("http://127.0.0.1:5000/permissions", {...requestOptions, redirect: 'follow'})
-  .then(response => {
-    if (response.status === 401) {
-      //window.location.href = '/login'
-    }
-    else {
-      response.text().then((text) => {
-        permissions= JSON.parse(text).permissions
-      })
-    }
-  })
-  .catch(error => console.log('error', error));
-
-  return permissions
+  
+  return await fetch("http://127.0.0.1:5000/permissions", { ...requestOptions, redirect: 'follow' })
+    .then(response => {
+      if (response.status === 401) {
+        window.location.href = '/login';
+        throw new Error('Unauthorized');
+      } else {
+        return response.text().then((text) => {
+          return JSON.parse(text).permissions as string[];
+        });
+      }
+    })
+    .catch(error => {
+      console.log('error', error);
+      throw error;
+    });
 }
