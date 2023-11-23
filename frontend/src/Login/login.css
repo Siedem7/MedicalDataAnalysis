@@ -1,0 +1,44 @@
+.container{
+    margin: 20vh auto;
+    width: 30vw;
+    border: 1px solid #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #ffffff;
+    font-size: 24px;
+    min-width: 400px;
+    max-width: 700px;
+}
+
+label, input {
+    width: 100%;
+}
+
+label{
+    margin-bottom: 10px;
+}
+
+input {
+    padding: 0.5em;
+    background-color:#2e2525;
+    color:#ffffff;
+    border: none;
+    font-size: 16px;
+}
+
+button {
+    width: 50%;
+    background-color: #2e2525;
+    color: #ffffff;
+    padding: 0.5em;
+    margin: 0 auto;
+    font-size: 16px;
+}
+
+label, input, button{
+    display: block;
+}
+
+.input-line{
+   width: 60%;
+   margin: 50px auto;
+}
