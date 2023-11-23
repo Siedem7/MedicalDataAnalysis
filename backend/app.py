@@ -3,7 +3,8 @@ from flask import Flask,  jsonify, request, abort
 from sqlalchemy.exc import NoResultFound, ArgumentError, IntegrityError
 
 from database_models import *
-
+import datetime
+from datetime import timedelta, datetime
 from functions import *
 
 app = Flask(__name__)
@@ -58,7 +59,7 @@ def create_user():
     try:
         user = User(login=login,
                     password=hash_password(password),
-                    password_expire_date=datetime.datetime.utcnow() + datetime.timedelta(days=30),
+                    password_expire_date=datetime.utcnow() + timedelta(days=30),
                     group=group_id)
         db.session.add(user)
         db.session.commit()
@@ -74,7 +75,7 @@ if __name__ == "__main__":
 
         user1 = User(login="admin",
                      password=hash_password("admin"),
-                     password_expire_date=datetime.datetime.utcnow() + datetime.timedelta(days=30),
+                     password_expire_date=datetime.utcnow() + timedelta(days=30),
                      group=1)
 
         group1 = Group(name="admin")

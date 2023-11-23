@@ -1,3 +1,5 @@
+import exp from "constants";
+
 export function loginForm(login: string, password: string) {
   var myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
@@ -19,7 +21,6 @@ export function loginForm(login: string, password: string) {
         response.text().then((text) => {
           let token = JSON.parse(text).token
           localStorage.setItem('token', token)
-          console.log(localStorage.getItem('token'))
         })
         window.location.href = '/'
       }
@@ -28,5 +29,34 @@ export function loginForm(login: string, password: string) {
       }
     })
     .catch(error => console.log('error', error));
+}
 
+export function logout() {
+  localStorage.removeItem('token')
+  window.location.href = '/login'
+}
+
+export function getPermissions(token: string) {
+  var myHeaders = new Headers();
+  myHeaders.append("Authorization", "Bearer " + token);
+
+  var requestOptions = {
+    method: 'GET',
+    headers: myHeaders,
+  };
+let permissions
+fetch("http://127.0.0.1:5000/permissions", {...requestOptions, redirect: 'follow'})
+  .then(response => {
+    if (response.status === 401) {
+      //window.location.href = '/login'
+    }
+    else {
+      response.text().then((text) => {
+        permissions= JSON.parse(text).permissions
+      })
+    }
+  })
+  .catch(error => console.log('error', error));
+
+  return permissions
 }
