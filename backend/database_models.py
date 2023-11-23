@@ -9,7 +9,7 @@ db = SQLAlchemy()
 
 
 class User(db.Model):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     login: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String)
     password_expire_date: Mapped[datetime.datetime] = mapped_column(
@@ -20,7 +20,7 @@ class User(db.Model):
 
 
 class PredictionModel(db.Model):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     description: Mapped[str] = mapped_column(String, nullable=False)
     configuration: Mapped[str] = mapped_column(String, nullable=False)
     modify_date: Mapped[datetime.datetime] = mapped_column(
@@ -31,7 +31,7 @@ class PredictionModel(db.Model):
 
 
 class File(db.Model):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     description: Mapped[str] = mapped_column(String, nullable=False)
     modify_date: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), nullable=False
@@ -42,7 +42,7 @@ class File(db.Model):
 
 
 class Group(db.Model):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
     permissions = relationship(
         "Permission", secondary='group_permission', backref="groups"
@@ -50,7 +50,7 @@ class Group(db.Model):
 
 
 class Permission(db.Model):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
 
 
