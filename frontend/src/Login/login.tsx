@@ -9,20 +9,20 @@ export default function Login() {
 
   return (
    <>
-    <div className="container">
+    <div className="container-login">
       <br />
       <form>
-        <div className="input-line">
-         <label htmlFor="username">Username</label>
-         <input type="text" id="username" name="username" maxLength={32} value={username} onChange={(text) => setUsername(text.target.value)} />
+        <div className="input-div">
+         <label className="label-login" htmlFor="username">Username</label>
+         <input className="input-login" type="text" id="username" name="username" maxLength={32} value={username} onChange={(text) => setUsername(text.target.value)} />
         </div>
-        <div className="input-line">
-          <label htmlFor="password">Password</label>
-          <input type="password" id="password" name="password" maxLength={32} value={password} onChange={(text) => setPassword(text.target.value)}  />
+        <div className="input-div">
+          <label className="label-login" htmlFor="password">Password</label>
+          <input className="input-login" type="password" id="password" name="password" maxLength={32} value={password} onChange={(text) => setPassword(text.target.value)}  />
         </div>
       </form>
       <div className="input-line">
-        <button onClick={() => loginForm(username, password)}>Login</button>
+        <button className="button-login" onClick={() => loginForm(username, password)}>Login</button>
       </div>
       <br />
     </div>
