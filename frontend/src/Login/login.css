@@ -1,4 +1,4 @@
-.container{
+.container-login{
     margin: 20vh auto;
     width: 30vw;
     border: 2px solid #ffffee;
@@ -9,19 +9,19 @@
     max-width: 700px;
 }
 
-label, input, button{
+.label-login, .input-login, .button-login{
     display: block;
 }
 
-label, input {
+.label-login, .input-login {
     width: 100%;
 }
 
-label{
+.label-login{
     margin-bottom: 10px;
 }
 
-input {
+.input-login {
     padding: 0.5em;
     background-color:#404040;
     color:#ffffff;
@@ -30,7 +30,7 @@ input {
     font-family: inherit;
 }
 
-button {
+.button-login {
     width: 50%;
     background-color: #202020;
     color: #ffffff;
@@ -43,13 +43,13 @@ button {
     font-size: 19px;
 }
 
-button:hover{
+.button-login:hover{
     cursor: pointer;
     filter:invert(10%);
 }
 
 
-.input-line{
+.input-div{
    width: 60%;
    margin: 30px auto;
 }
