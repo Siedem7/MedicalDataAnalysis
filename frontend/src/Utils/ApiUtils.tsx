@@ -1,5 +1,3 @@
-import exp from "constants";
-
 export function loginForm(login: string, password: string) {
   var myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
