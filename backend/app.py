@@ -5,6 +5,9 @@ from flask import Flask,  jsonify, request, abort
 from sqlalchemy.exc import NoResultFound, ArgumentError, IntegrityError
 
 from database_models import *
+from ai_model import AI_model
+from data_set import data_set
+
 import datetime
 from datetime import timedelta, datetime
 from functions import *
