@@ -74,6 +74,44 @@ def create_user():
     return jsonify("Successfully created user")
 
 
+@app.route("/delete_user", methods=["POST"])
+def delete_user():
+    token = request.headers.get("Authorization")
+    status, result = authorize_permissions(token,["DELETE_USER_ACCOUNT"])
+
+    if status != 200:
+        abort(status, description=result)
+
+    id = request.json["id"]
+    try:
+        user = db.session.execute(db.select(User).filter_by(id=id)).scalar_one()
+        db.session.delete(user)
+        db.session.commit()
+    except IntegrityError:
+        abort(409, description="User with that login already don't exists.")
+
+    return jsonify("Successfully deleted user")
+
+@app.route("/update_user", methods=["POST"])
+def update_user():
+    token = request.headers.get("Authorization")
+    status, result = authorize_permissions(token,["UPDATE_USER_ACCOUNT"])
+
+    if status != 200:
+        abort(status, description=result)
+
+    id = request.json["id"]
+    new_role_id = request.json["new_role_id"]
+    try:
+        user = db.session.execute(db.select(User).filter_by(id=id)).scalar_one()
+        user.group=new_role_id
+        db.session.commit()
+    except IntegrityError:
+        abort(409, description="User with that login already don't exists.")
+
+    return jsonify("Successfully updated user")
+
+
 if __name__ == "__main__":
     isInitialized = bool(os.path.exists("./instance/project.db"))
 
