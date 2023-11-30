@@ -9,5 +9,6 @@ cd backend/venv/Scripts/
 call activate.bat
 cd ../..
 
+cd src
 REM Run the backend server
 python app.py

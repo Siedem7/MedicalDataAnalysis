@@ -37,3 +37,7 @@ yarn-error.log*
 backend/__pycache__
 backend/instance/
 backend/instance/project.db
+backend/src/__pycache__/functions.cpython-311.pyc
+backend/src/instance/project.db
+.gitignore
+backend/src/__pycache__/database_models.cpython-311.pyc

@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import secrets
 import string
 from sqlalchemy.exc import NoResultFound
-from src.database_models import db, User, Group, Permission
+from database_models import db, User, Group, Permission
 
 # USE PYDOC TO GENERATE DOCUMENTATION
 # CHANGE TEMPORARY COMMENTS TO DOCSTRINGS
