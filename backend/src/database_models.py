@@ -11,7 +11,7 @@ db = SQLAlchemy()
 class User(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     login: Mapped[str] = mapped_column(String, unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(String)
+    password: Mapped[str] = mapped_column(String, nullable=False)
     password_expire_date: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), nullable=False
     )

@@ -17,6 +17,9 @@ SECRET_KEY = 'some key'
 
 # Hash user password to store in database
 def hash_password(password):
+    """
+        Hash password using SHA512 algorithm.
+    """
     hashedPassword = hashlib.sha512(password.encode("utf-8")).hexdigest()
     return hashedPassword
 
@@ -27,11 +30,9 @@ def validate_password(password):
     return True
 
 
-# Check if email is valid
-# Uses regex
-def validate_email(email):
-    return re.search(r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@" +
-                     r"(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$", email)
+# Check if login is valid
+def validate_login(login):
+    return re.search(r"^[a-zA-Z0-9_.-]+$", login)
 
 
 # Generate authorization token (jwt)
@@ -68,28 +69,38 @@ def get_id_from_token(token):
         return 'Invalid token. Please log in again.'
 
 
+# Authorize user based on token
 def authorize(token):
+    # Check if token is valid
     if token is None or token[:7] != "Bearer ":
         return 401, "Invalid token."
 
+    # Extract user id from token
     user_id = get_id_from_token(token[7:])
 
     try:
+        # Get user from database
         user = db.session.execute(db.select(User).filter_by(id=user_id)).scalar_one()
     except NoResultFound:
+        # If user does not exist return 401
         return 401, "No user with provided token."
     
+    # Return user, and ok status
     return 200, user
 
 
+# Authorize user based on token and permissions
 def authorize_permissions(token, permissions):
+    # Authorize user based on token
     status, result = authorize(token)
 
+    # If user is not authorized return status and result
     if status != 200:
         return status, result
 
     user = result
 
+    # Check if user has specified permissions
     for permission in permissions:
         if permission not in [permission.name for permission in user.groups.permissions]:
             return 403, "No permission to access this feature."
@@ -97,6 +108,7 @@ def authorize_permissions(token, permissions):
     return 200, user
 
 
+# Generate basic information about system
 def initialize_database():
     user1 = User(login="admin",
                  password=hash_password("admin"),

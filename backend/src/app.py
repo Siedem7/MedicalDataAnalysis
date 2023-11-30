@@ -17,6 +17,7 @@ def create_app(database_uri="sqlite:///project.db"):
 
     @app.route("/")
     def hello_world():
+        request.json['test']
         return "Hello World!"
 
     @app.route("/login", methods=["POST"])
@@ -52,15 +53,20 @@ def create_app(database_uri="sqlite:///project.db"):
             abort(status, description=result)
 
         expected_keys = ["login", "password", "group"]
-        if not all(key in request.json for key in expected_keys):
-            abort(400, description="Missing or incorrect keys in the request")
+        if not all(key in request.json.keys() for key in expected_keys):
+            abort(400, description="Missing keys in the request")
 
         login = request.json["login"]
         password = request.json["password"]
         group_name = request.json["group"]
 
-        if not login or not password or not group_name:
-            abort(400, description="Invalid input data")
+        if not validate_login(login):
+            abort(400, description="Invalid login.")
+
+        if not validate_password(password):
+            abort(400, description="Passowrd doesn't meet requirements.")
+
+        # verify password with policy (length, special characters, etc.)
         try:
             group = db.session.execute(db.select(Group).filter_by(name=group_name)).scalar_one()
         except NoResultFound:
@@ -78,7 +84,6 @@ def create_app(database_uri="sqlite:///project.db"):
 
         return jsonify("Successfully created user")
 
-
     @app.route("/delete_user", methods=["DELETE"])
     def delete_user():
         token = request.headers.get("Authorization")
@@ -87,19 +92,18 @@ def create_app(database_uri="sqlite:///project.db"):
         if status != 200:
             abort(status, description=result)
 
-        if "id" not in request.json:
-            abort(400, description="Missing or incorrect keys in the request")
+        if "user_id" not in request.json.keys():
+            abort(400, description="Missing user_id in the request.")
 
-        id = request.json["id"]
+        user_id = request.json["user_id"]
+
         try:
-            user = db.session.execute(db.select(User).filter_by(id=id)).scalar_one()
+            user = db.session.execute(db.select(User).filter_by(id=user_id)).scalar_one()
         except NoResultFound:
             abort(404, description="User with that id not found.")
-        try:
-            db.session.delete(user)
-            db.session.commit()
-        except IntegrityError:
-            abort(409, description="Error while deleting the user.")
+
+        db.session.delete(user)
+        db.session.commit()
 
         return jsonify("Successfully deleted user")
 
@@ -107,51 +111,55 @@ def create_app(database_uri="sqlite:///project.db"):
     def update_user():
         token = request.headers.get("Authorization")
         status, result = authorize_permissions(token, ["UPDATE_USER_ACCOUNT"])
-        changed=0
+        
+        
         if status != 200:
             abort(status, description=result)
 
-        if "id" not in request.json:
-            abort(400, description="Missing or incorrect keys in the request")
+        expected_keys = ["user_id", "login", "password", "group"]
+        if not any(key in request.json.keys() for key in expected_keys):
+            abort(400, description="Missing keys in the request.")
 
-        id = request.json["id"]
+        user_id = request.json["user_id"]
 
         try:
-            user = db.session.execute(db.select(User).filter_by(id=id)).scalar_one()
+            user = db.session.execute(db.select(User).filter_by(id=user_id)).scalar_one()
         except NoResultFound:
             abort(404, description="User with that id not found.")
 
+        if "login" in request.json:
+            login = request.json["login"]
+            try:
+                user.login = login
+                db.session.commit()
+            except IntegrityError:
+                abort(409, description="Already used login.")
+
         if "group" in request.json:
             group_name = request.json["group"]
+
             try:
                 group = db.session.execute(db.select(Group).filter_by(name=group_name)).scalar_one()
             except NoResultFound:
                 abort(400, description="Invalid group name.")
 
-            try:
-                user.group = group.id
-                db.session.commit()
-                changed=1
-            except IntegrityError:
-                abort(409, description="Error while updating the user.")
+            user.group = group.id
 
         if "password" in request.json:
             password = request.json["group"]
-            try:
-                user.password = hash_password(password)
-                user.password_expire_date=datetime.utcnow() + timedelta(days=30)
-                db.session.commit()
-                changed=1
-            except IntegrityError:
-                abort(409, description="Error while updating the user.")
-        if changed==0:
-            abort(400, description="Missing values")
+            
+            user.password = hash_password(password)
+            user.password_expire_date=datetime.utcnow() + timedelta(days=30)
+
+        
+        db.session.commit()
         return jsonify("Successfully updated user")
 
     return app
 
 
 if __name__ == "__main__":
+
     app = create_app()
     isInitialized = os.path.exists("instance/project.db")
 
