@@ -70,7 +70,7 @@ def create_app(database_uri="sqlite:///project.db"):
 
 if __name__ == "__main__":
     app = create_app()
-    isInitialized = bool(os.path.exists("../instance/project.db"))
+    isInitialized = os.path.exists("instance/project.db")
 
     with app.app_context():
         db.create_all()
