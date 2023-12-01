@@ -1,0 +1,14 @@
+.tile{
+    border: white 1px solid;
+    width: 300px;
+    text-align: center;;
+    color: white;
+    text-decoration: none;
+    padding: 150px 0;
+}
+
+.main-page-container{
+    display: grid;
+    grid-template-columns: auto auto auto;
+    margin: 100px;
+}
