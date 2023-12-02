@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import secrets
 import string
 from sqlalchemy.exc import NoResultFound
-from database_models import db, User, Group, Permission
+from src.database_models import db, User, Group, Permission
 
 
 # Only for development purposes
@@ -48,7 +48,7 @@ def validate_password(password):
 def validate_login(login):
     """
     Check if login meets requirements. (consists of letters, numbers, 
-    special caracters)
+    special characters)
 
     Parameters: 
         login (str): login to check.    

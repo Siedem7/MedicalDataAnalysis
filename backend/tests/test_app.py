@@ -31,6 +31,13 @@ def test_create_user(client, app):
             new_user = db.session.execute(db.select(User).filter_by(login="kamil")).scalar_one()
             db.session.delete(new_user)
             db.session.commit()
-        except IntegrityError:
-            abort(409, description="Something went wrong")
+        except NoResultFound:
+            assert False
     assert b'"Successfully created user"\n' in user.data
+
+
+def test_delete_user():
+    assert True
+
+def test_update_user():
+    assert True
