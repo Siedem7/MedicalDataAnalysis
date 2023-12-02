@@ -9,6 +9,7 @@ db = SQLAlchemy()
 
 
 class User(db.Model):
+    """User model, used for database mapping."""
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     login: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String, nullable=False)
@@ -20,6 +21,7 @@ class User(db.Model):
 
 
 class PredictionModel(db.Model):
+    """Prediction model model, used for database mapping."""
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     description: Mapped[str] = mapped_column(String, nullable=False)
     configuration: Mapped[str] = mapped_column(String, nullable=False)
@@ -31,6 +33,7 @@ class PredictionModel(db.Model):
 
 
 class File(db.Model):
+    """File model, used for database mapping."""
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     description: Mapped[str] = mapped_column(String, nullable=False)
     modify_date: Mapped[datetime.datetime] = mapped_column(
@@ -42,6 +45,7 @@ class File(db.Model):
 
 
 class Group(db.Model):
+    """Group model, used for database mapping."""
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
     permissions = relationship(
@@ -50,6 +54,7 @@ class Group(db.Model):
 
 
 class Permission(db.Model):
+    """Permission model, used for database mapping."""
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
 

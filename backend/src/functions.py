@@ -7,18 +7,22 @@ import string
 from sqlalchemy.exc import NoResultFound
 from database_models import db, User, Group, Permission
 
-# USE PYDOC TO GENERATE DOCUMENTATION
-# CHANGE TEMPORARY COMMENTS TO DOCSTRINGS
 
 # Only for development purposes
 # For production use environment variables
 SECRET_KEY = 'some key'
 
 
-# Hash user password to store in database
 def hash_password(password):
     """
-        Hash password using SHA512 algorithm.
+    Hash password using SHA512 algorithm. Used to store password 
+    in database.
+
+    Parameters: 
+        password (str): plain password to hash.
+
+    Returns:
+        str: hashed password.
     """
     hashedPassword = hashlib.sha512(password.encode("utf-8")).hexdigest()
     return hashedPassword
@@ -27,18 +31,46 @@ def hash_password(password):
 # Check if password is valid
 # Needs to be confirmed with passwords policy
 def validate_password(password):
+    """
+    Check if password meets requirements configured in passwords 
+    policy.
+
+    Parameters: 
+        password (str): plain password to check.
+
+    Returns:
+        bool: True if password meets requirements, False otherwise.
+    """
     return True
 
 
 # Check if login is valid
 def validate_login(login):
+    """
+    Check if login meets requirements. (consists of letters, numbers, 
+    special caracters)
+
+    Parameters: 
+        login (str): login to check.    
+    
+    Returns:
+        bool: True if login meets requirements, False otherwise.
+    """
     return re.search(r"^[a-zA-Z0-9_.-]+$", login)
 
 
-# Generate authorization token (jwt)
-# Token contains user id
-# Token is valid for 1 day
 def generate_token(user_id):
+    """
+    Generate authorization token (jwt) based on user id. Token is 
+    valid for 1 day.
+
+    Parameters: 
+        user_id (int): id of user to generate token for.
+
+    Returns:
+        str: generated token.
+    """
+
     # Token data
     # exp - expiration date
     # iat - issued at
@@ -56,8 +88,16 @@ def generate_token(user_id):
     return token
 
 
-# Extract user id from token
 def get_id_from_token(token):
+    """
+    Extract user id from token. Used to authenticate user.
+
+    Parameters:
+        token (str): token to decode.
+
+    Returns:
+        int: user id.
+    """
      # Decode token based on secret key 
      # Use try except to handle exceptions (invalid token, expired token)
     try:
@@ -69,8 +109,18 @@ def get_id_from_token(token):
         return 'Invalid token. Please log in again.'
 
 
-# Authorize user based on token
 def authorize(token):
+    """
+    Authorize user based on token.
+    
+    Parameters:
+        token (str): token to decode.
+
+    Returns:
+        int: status code.
+        str: result message.
+    """
+
     # Check if token is valid
     if token is None or token[:7] != "Bearer ":
         return 401, "Invalid token."
@@ -89,8 +139,19 @@ def authorize(token):
     return 200, user
 
 
-# Authorize user based on token and permissions
 def authorize_permissions(token, permissions):
+    """
+    Authorize user based on token and permissions.
+
+    Parameters:
+        token (str): token to decode.
+        permissions (list): list of permissions to check.
+
+    Returns:
+        int: status code.
+        str: result message. 
+    """
+    
     # Authorize user based on token
     status, result = authorize(token)
 
@@ -108,8 +169,11 @@ def authorize_permissions(token, permissions):
     return 200, user
 
 
-# Generate basic information about system
 def initialize_database():
+    """
+    Initialize database with basic information. Used only for 
+    development and tests.
+    """
     user1 = User(login="admin",
                  password=hash_password("admin"),
                  password_expire_date=datetime.utcnow() + timedelta(days=30),
