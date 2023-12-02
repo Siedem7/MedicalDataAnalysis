@@ -7,9 +7,15 @@ export default function Login() {
   const [username, setUsername] = React.useState('')
   const [password, setPassword] = React.useState('')
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      loginForm(username, password)
+    }
+  };
+
   return (
    <>
-    <div className="container-login">
+    <div className="container-login" onKeyDown={handleKeyDown}>
       <br />
       <form>
         <div className="input-div">
