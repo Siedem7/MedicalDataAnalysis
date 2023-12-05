@@ -1,14 +1,38 @@
-.tile{
-    border: white 1px solid;
-    width: 300px;
-    text-align: center;;
-    color: white;
-    text-decoration: none;
-    padding: 150px 0;
+.main-page-container{
+    margin-top: 100px;
 }
 
-.main-page-container{
+.grid4 {
+    height: 700px;
+    width: 700px;
+    margin: auto;
     display: grid;
-    grid-template-columns: auto auto auto;
-    margin: 100px;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 100px;
 }
+
+.tile {
+    border: white 1px solid;
+    height: 100%;
+    width: 100%;
+    min-width: 250px;
+    min-height: 250px;
+}
+
+.main-page-link {
+    height: 100%;
+    width: 100%;
+    display: block;
+    text-align: center;
+}
+
+.main-page-link p {
+    margin:0;
+    position: relative;
+    transform: translate(-50%, -50%);
+    top: 50%;
+    left: 50%;
+}
+
+/*GRIDS 1-7*/

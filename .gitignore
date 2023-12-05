@@ -38,4 +38,6 @@ backend/__pycache__
 backend/instance/
 backend/instance/project.db
 backend/src/__pycache__/
+backend/tests/__pycache__/
+backend/.pytest_cache
 backend/src/instance/

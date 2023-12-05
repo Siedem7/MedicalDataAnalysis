@@ -5,11 +5,14 @@ import { Link } from "react-router-dom";
 import './MainPage.css'
 
 export default function MainPage() {
+  
   let token = localStorage.getItem('token') as string
   const [permissions, setPermissions] = useState([""]);
+  
 
   if (token === null) {
     window.location.href = '/login'
+    return (<h1>Loading...</h1>)
   }
   
   if (permissions[0] === "") {
@@ -18,17 +21,22 @@ export default function MainPage() {
     });
   }
 
+  let grid = "grid" + permissions.length.toString();
+
+  //switch link+img
   return (
     <>
       <div className="main-page-container">
-        {permissions.map((item) => 
-          <Link to="/">
+        <div className={grid}>
+          {permissions.map((item) => 
             <div className="tile">
-              {item}
+              <Link to="/" className="main-page-link" >
+                  <p>{item}</p>
+              </Link>
             </div>
-          </Link>
-        )}
-      </div>
+          )}
+        </div>
+      </div> 
     </>
   )
 

@@ -5,7 +5,7 @@ from flask import Flask,  jsonify, request, abort
 from sqlalchemy.exc import IntegrityError
 
 import datetime
-from functions import *
+from src.functions import *
 
 
 def create_app(database_uri="sqlite:///project.db"):
