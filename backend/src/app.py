@@ -12,6 +12,12 @@ from src.functions import *
 
 
 def create_app(database_uri="sqlite:///project.db"):
+    """
+    Creates app with specified database path. 
+
+    Parameters: 
+        database_uri (str): database name. 
+    """
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = database_uri
     db.init_app(app)
@@ -20,26 +26,40 @@ def create_app(database_uri="sqlite:///project.db"):
 
     CORS(app)
 
-    @app.route("/")
-    def hello_world():
-        request.json['test']
-        return "Hello World!"
-
     @app.route("/login", methods=["POST"])
     def login_user():
+        """
+        Logs user to server. Check if user with provided login and password exists, 
+        then returns generated token used for further authorization. 
+
+        Request format: JSON
+
+        Returns:
+            200, Token in JSON format. 
+            404, Invalid login or password.
+        """
         login = request.json["login"]
         password = request.json["password"]
 
         try:
             user = db.session.execute(db.select(User).filter_by(login=login, password=hash_password(password))).scalar_one()
         except NoResultFound:
-            abort(400, description="Invalid login or password.")
+            abort(404, description="Invalid login or password.")
 
         token = generate_token(user.id)
         return jsonify({"token": token})
 
     @app.route("/permissions")
     def get_permissions():
+        """
+        Returns permission for user sending request based on authorization token.
+
+        Request format: JSON
+        
+        Returns:
+            200, Names of user permissions in JSON format. 
+            403, No permission to access this feature. (Not logged in)
+        """
         token = request.headers.get("Authorization")
         status, result = authorize(token)
 
@@ -51,6 +71,24 @@ def create_app(database_uri="sqlite:///project.db"):
 
     @app.route("/create_user", methods=["POST"])
     def create_user():
+        """
+        Create user in database. Request should have authorization header with token 
+        used to authorize user and following information: 
+            - login - user login
+            - password - user password
+            - group - name of user group
+
+        Requires CREATE_USER_ACCOUNT permission.
+        
+        Request format: JSON
+        
+        Returns: 
+            200, Successfully created user.
+            400, Missing keys in the request. | Invalid login. | 
+                 Passowrd doesn't meet requirements. | Invalid group name.
+            403, No permission to access this feature.
+            409, User with that login already exists.
+        """
         token = request.headers.get("Authorization")
         status, result = authorize_permissions(token,["CREATE_USER_ACCOUNT"])
 
@@ -87,10 +125,24 @@ def create_app(database_uri="sqlite:///project.db"):
         except IntegrityError:
             abort(409, description="User with that login already exists.")
 
-        return jsonify("Successfully created user")
+        return jsonify("Successfully created user.")
 
     @app.route("/delete_user", methods=["DELETE"])
     def delete_user():
+        """
+        Delete user in database. Request should have authorization header with token 
+        used to authorize user and user_id (id of user to delete)
+        
+        Requires DELETE_USER_ACCOUNT permission.
+
+        Request format: JSON
+         
+        Returns: 
+            200, Successfully deleted user.
+            400, Missing user_id in the request.
+            403, No permission to access this feature.
+            404, User with that id not found.
+        """
         token = request.headers.get("Authorization")
         status, result = authorize_permissions(token, ["DELETE_USER_ACCOUNT"])
 
@@ -110,10 +162,29 @@ def create_app(database_uri="sqlite:///project.db"):
         db.session.delete(user)
         db.session.commit()
 
-        return jsonify("Successfully deleted user")
+        return jsonify("Successfully deleted user.")
 
     @app.route("/update_user", methods=["PUT"])
     def update_user():
+        """
+        Update user in database. Request should have authorization header with token 
+        used to authorize user, user_id (id of user to update) and at least one of 
+        following information: 
+            - login - new login
+            - password - new password
+            - group - name of new group
+
+        Requires UPDATE_USER_ACCOUNT permission.
+
+        Request format: JSON
+        
+        Returns: 
+            200, Successfully updated user.
+            400, Missing keys in the request. | Missing user_id in request.| Invalid group name.
+            403, No permission to access this feature.
+            404, User with that id not found.
+            409, Already used login.
+        """
         token = request.headers.get("Authorization")
         status, result = authorize_permissions(token, ["UPDATE_USER_ACCOUNT"])
         
@@ -121,7 +192,11 @@ def create_app(database_uri="sqlite:///project.db"):
         if status != 200:
             abort(status, description=result)
 
-        expected_keys = ["user_id", "login", "password", "group"]
+        if not "user_id" in request.json.keys():
+            abort(400, "Missing user_id in request.")
+
+
+        expected_keys = ["login", "password", "group"]
         if not any(key in request.json.keys() for key in expected_keys):
             abort(400, description="Missing keys in the request.")
 
@@ -151,14 +226,14 @@ def create_app(database_uri="sqlite:///project.db"):
             user.group = group.id
 
         if "password" in request.json:
-            password = request.json["group"]
+            password = request.json["password"]
             
             user.password = hash_password(password)
             user.password_expire_date=datetime.utcnow() + timedelta(days=30)
 
         
         db.session.commit()
-        return jsonify("Successfully updated user")
+        return jsonify("Successfully updated user.")
 
     
     @app.route("/upload_file", methods=["POST"])
@@ -172,6 +247,8 @@ def create_app(database_uri="sqlite:///project.db"):
 
         Requires MANAGE_FILE permission.
 
+        Request format: form-data
+        
         Returns: 
             200, File uploaded succesfully
             400, Missing csv_file in request.
