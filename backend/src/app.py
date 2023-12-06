@@ -26,6 +26,52 @@ def create_app(database_uri="sqlite:///project.db"):
 
     CORS(app)
 
+    @app.route("/groups", methods=["GET"]) 
+    def get_groups():
+        """ 
+        Get list of groups defined in the system. Only available for logged users.
+
+        Returns
+            200, List of groups. 
+            403, No permission to access this feature. (Not logged in).  
+        """
+        token = request.headers.get("Authorization")
+        status, result = authorize(token)
+
+
+        if status != 200:
+            abort(status, description=result)
+
+        groups = db.session.execute(db.select(Group)).scalars().all()
+        return jsonify({"groups": [group.name for group in groups]})
+
+    @app.route("/users", methods=['GET'])
+    def get_users():
+        """
+        Get list of users registerd in the system. 
+
+        Requires DELETE_USER_ACCOUNT or UPDATE_USER_ACCOUNT
+
+        Returns:
+            200, List of users.
+            403, No permission to access this feature.
+        """   
+        token = request.headers.get("Authorization")
+        status, result = authorize(token)
+
+        if status != 200:
+            abort(403, description=result)
+
+        required_permissions = ["DELETE_USER_ACCOUNT", "UPDATE_USER_ACCOUNT"]
+        user_group = db.session().execute(db.select(Group).filter_by(id=result.group)).scalar_one()
+        
+        user_permissions = user_group.permissions
+        if not any(permission.name in required_permissions for permission in user_permissions):
+            abort(403, "No permission to access this feature.")
+
+        users = db.session.execute(db.select(User)).scalars().all()
+        return jsonify({"users": [user.login for user in users]})
+
     @app.route("/login", methods=["POST"])
     def login_user():
         """
@@ -188,7 +234,6 @@ def create_app(database_uri="sqlite:///project.db"):
         token = request.headers.get("Authorization")
         status, result = authorize_permissions(token, ["UPDATE_USER_ACCOUNT"])
         
-        
         if status != 200:
             abort(status, description=result)
 
@@ -231,11 +276,9 @@ def create_app(database_uri="sqlite:///project.db"):
             user.password = hash_password(password)
             user.password_expire_date=datetime.utcnow() + timedelta(days=30)
 
-        
         db.session.commit()
         return jsonify("Successfully updated user.")
 
-    
     @app.route("/upload_file", methods=["POST"])
     def upload_file():
         """
@@ -280,7 +323,6 @@ def create_app(database_uri="sqlite:///project.db"):
             abort(409, "File with that name already exists on the server.")
 
         new_file.save(file_path)
-
 
         database_file = File()
         database_file.description = request.form["description"]
