@@ -41,3 +41,4 @@ backend/src/__pycache__/
 backend/tests/__pycache__/
 backend/.pytest_cache
 backend/src/instance/
+backend/data_files

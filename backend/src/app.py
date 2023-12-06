@@ -3,8 +3,11 @@ import os
 from flask_cors import CORS
 from flask import Flask,  jsonify, request, abort
 from sqlalchemy.exc import IntegrityError
+from werkzeug.utils import secure_filename
+
 
 import datetime
+from src.database_models import *
 from src.functions import *
 
 
@@ -12,6 +15,8 @@ def create_app(database_uri="sqlite:///project.db"):
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = database_uri
     db.init_app(app)
+
+    app.config["UPLOAD_FOLDER"] =  os.path.join(os.getcwd(), "data_files")
 
     CORS(app)
 
@@ -155,13 +160,71 @@ def create_app(database_uri="sqlite:///project.db"):
         db.session.commit()
         return jsonify("Successfully updated user")
 
+    
+    @app.route("/upload_file", methods=["POST"])
+    def upload_file():
+        """
+        Upload csv file containing data to system. Path with additional 
+        infromations (description, upload data and owner) are also stored 
+        in database. Request should have authorization header with token 
+        used to authorize user and form-data body containing "csv_file" 
+        and "description".
+
+        Requires MANAGE_FILE permission.
+
+        Returns: 
+            200, File uploaded succesfully
+            400, Missing csv_file in request.
+            403, No permission to access this feature. | Missing description in request.
+            409, File with that name already exists on the server.
+        """
+        token = request.headers.get("Authorization")
+        status, result = authorize_permissions(token, ["MANAGE_FILE"])
+
+        if status != 200:
+            abort(status, description=result)
+
+
+        if "csv_file" not in request.files.keys():
+            abort(400, "Missing csv_file in request.")
+
+        if "description" not in request.form.keys():
+            abort(400, "Missing description in request.")
+
+        date_uploaded = datetime.utcnow()
+
+        new_file = request.files["csv_file"]
+        file_path = os.path.join(
+            app.config["UPLOAD_FOLDER"], 
+            secure_filename(date_uploaded.strftime("%B %d %Y %H %M") + "_" + new_file.filename) 
+        )
+
+        if os.path.exists(file_path):
+            abort(409, "File with that name already exists on the server.")
+
+        new_file.save(file_path)
+
+
+        database_file = File()
+        database_file.description = request.form["description"]
+        database_file.modify_date = date_uploaded
+        database_file.path = file_path
+        database_file.user = result.id
+
+        db.session.add(database_file)
+        db.session.commit()
+
+        return jsonify("File uploaded succesfully")
+
     return app
 
 
 if __name__ == "__main__":
 
     app = create_app()
-    isInitialized = os.path.exists("instance/project.db")
+    isInitialized = os.path.exists("src/instance/project.db")
+    if not os.path.exists("data_files"):
+        os.mkdir("data_files")
 
     with app.app_context():
         db.create_all()
