@@ -1,0 +1,20 @@
+.create-account-form{
+    max-width: 500px;
+    margin: 50px auto;
+    border: 1px white solid;
+    border-radius: 10px;
+}
+
+.create-account-form input[type="text"]{
+    width: 90%;
+}
+
+.input-field{
+    margin: 20px;
+}
+
+.add-user-button{
+    margin: auto;
+    width: 68px;
+    height: 40px;
+}

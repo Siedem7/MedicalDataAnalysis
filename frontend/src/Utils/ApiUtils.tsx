@@ -4,7 +4,7 @@ export function loginForm(login: string, password: string) {
 
   var raw = JSON.stringify({
     "login": login,
-    "password": login
+    "password": password
   });
 
   var requestOptions = {

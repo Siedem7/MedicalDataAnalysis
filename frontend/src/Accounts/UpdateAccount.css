@@ -1,0 +1,32 @@
+.choose-user-container{
+    width: 300px;
+    margin: 50px auto 20px auto;
+}
+
+.choose-user-container p{
+    display: inline;
+    margin-right: 20px;
+}
+
+.update-account-form{
+    max-width: 500px;
+    margin: auto;
+    border: 1px white solid;
+    border-radius: 10px;
+}
+
+.update-account-form input[type="text"]{
+    width: 90%;
+}
+
+.save-changes-button{
+    margin: 20px auto;
+    width: 80px;
+    height: 40px;
+}
+
+.input-field p{
+    display: inline;
+    margin-right: 20px;
+}
+

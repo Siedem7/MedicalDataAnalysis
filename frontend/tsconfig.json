@@ -23,6 +23,7 @@
   "include": [
     "src",
     "Login",
-    "MainPage"
+    "MainPage",
+    "Accounts"
   ]
 }
