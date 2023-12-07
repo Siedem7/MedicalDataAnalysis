@@ -1,4 +1,6 @@
+import csv
 import os
+import pickle
 
 from flask_cors import CORS
 from flask import Flask,  jsonify, request, abort
@@ -30,6 +32,15 @@ def create_app(database_uri="sqlite:///project.db"):
     app.config["UPLOAD_FOLDER"] =  os.path.join(os.getcwd(), "data_files")
 
     CORS(app)
+
+    @app.route("/", methods=["GET"])
+    def test():
+        with open('Model gamma.pkl', 'rb') as file:
+            model = pickle.load(file)
+
+        print(model.data.get_data_structure())
+
+        return jsonify("taktak")
 
     @app.route("/groups", methods=["GET"]) 
     def get_groups():
@@ -340,6 +351,35 @@ def create_app(database_uri="sqlite:///project.db"):
 
         return jsonify("File uploaded succesfully")
     
+    @app.route("/get_datasets", methods=["GET"])
+    def get_datasets():
+        """
+
+        """
+        token = request.headers.get("Authorization")
+        status, result = authorize_permissions(token, ["MANAGE_FILE"])
+
+        if status != 200:
+            abort(status, result)
+
+        
+        files = db.session.execute(db.select(File)).scalars().all()
+        
+        datasets = list()
+        for file in files:
+            file_id = file.id      
+            file_path = file.path
+            file_description = file.description
+            file_name = os.path.splitext(os.path.basename(file.path))[0]
+            file_header = []
+            with open(file_path, 'r') as file:
+                csvreader = csv.reader(file)
+                file_header = next(csvreader)
+
+            datasets.append({"file_id": file_id, "file_name": file_name, "desc": file_description, "columns": file_header})
+        
+        return jsonify(datasets)
+
     @app.route("/create_model", methods=['POST']) 
     def create_model():
         """
@@ -352,7 +392,9 @@ def create_app(database_uri="sqlite:///project.db"):
                  between training and test sets,
             - categorical_columns: list of column names that shoud be converted to dummies,
             - numerical_columns: list of column names that should be normalized with min max values,
-            - output_column: name of coulmn considered as output values, 
+            - output_column: name of coulmn considered as output values,
+            - epochs: number of iteration of learning process
+            - batch_size: size of batch processed at time in learing process
             - layers: list of layers.
 
             Layer structure:
@@ -385,8 +427,6 @@ def create_app(database_uri="sqlite:///project.db"):
         if status != 200:
             abort(status, result)
 
-
-
         file_id = request.json["file_id"]
         file = db.session.execute(db.select(File).filter_by(id=file_id)).scalar_one()
         file_path = file.path
@@ -397,6 +437,8 @@ def create_app(database_uri="sqlite:///project.db"):
         numerical_columns =  request.json["numerical_columns"]
         categorical_columns = request.json["categorical_columns"]
         output_column = request.json["output_column"]
+        epochs = request.json["epochs"]
+        batch_size = request.json["batch_size"]
 
         data_instance.normalize_data(
             numerical_columns=numerical_columns,
@@ -411,9 +453,14 @@ def create_app(database_uri="sqlite:///project.db"):
         
         model = AI_model(name=model_name, description=model_descritpion)
         model.set_structure(data_instance, layers=layers)
-        model.create_model(training_percent, socketio)
+        model.create_model(epochs, batch_size, training_percent, socketio)
         
         socketio.send(str(model.model))
+
+        # Store the object to a file
+        print(model.data.get_data_structure())
+        with open(model_name + '.pkl', 'wb') as file:
+            pickle.dump(model, file)
 
         return jsonify("Succesfully crated model.")
 

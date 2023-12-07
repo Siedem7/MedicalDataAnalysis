@@ -61,6 +61,7 @@ class data_set():
             column['median'] = self.data[column['name']].median()
             self.data[column['name']] = (self.data[column['name']] - self.data[column['name']].min()) / (self.data[column['name']].max() - self.data[column['name']].min())
 
+        self.data_structure = data_structure
         self.is_data_normalized = True
     
     def get_data_structure(self):

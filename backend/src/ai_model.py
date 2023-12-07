@@ -3,6 +3,8 @@ import torch as torch
 import torch.nn as nn 
 import numpy as np
 
+
+
 class AI_model():
     """
     Class for AI model. Contains model and informations about model.
@@ -58,7 +60,7 @@ class AI_model():
         self.is_model_trained = False
 
     
-    def create_model(self, training_procent: float, socketio):
+    def create_model(self, epochs, batch_size,  training_procent: float, socketio):
         """
         Create model for AI model.
 
@@ -76,9 +78,7 @@ class AI_model():
 
         loss_fn = nn.BCELoss()
         optimizer = torch.optim.Adam(self.model.parameters())
-        n_epochs = 100
-        batch_size = 20
-        for epoch in range(n_epochs):
+        for epoch in range(epochs):
             np.random.seed(epoch)  # Seed numpy with the epoch value
             torch.manual_seed(epoch)
             for i in range(0, len(X_train), batch_size):
@@ -106,7 +106,6 @@ class AI_model():
             socketio.emit("model_training", f"Accuracy: {accuracy}")
 
         self.is_model_trained = True
-
 
     def predict(self, data):
         """
