@@ -88,6 +88,44 @@ def create_app(database_uri="sqlite:///project.db"):
         users = db.session.execute(db.select(User)).scalars().all()
         return jsonify({"users": [{"login": user.login, "id": user.id} for user in users]})
 
+    @app.route("/user/<int:user_id>", methods=["GET"])
+    def get_user(user_id):
+
+        """
+        Get info by id about user registered in the system. 
+
+        Requires DELETE_USER_ACCOUNT or UPDATE_USER_ACCOUNT or CREATE_USER_ACCOUNT
+
+        Returns:
+            200, Single user info.
+            403, No permission to access this feature.
+            404, User with that id not found
+        """ 
+        token = request.headers.get("Authorization")
+        status, result = authorize(token)
+
+        if status != 200:
+            abort(403, description=result)
+
+        required_permissions = ["DELETE_USER_ACCOUNT", "UPDATE_USER_ACCOUNT", "CREATE_USER_ACCOUNT"]
+        user_group = db.session().execute(db.select(Group).filter_by(id=result.group)).scalar_one()
+        
+        try:
+            user = db.session.execute(db.select(User).filter_by(id=user_id)).scalar_one()
+        except NoResultFound:
+            abort(404, description="User with that id not found.")
+
+        user_permissions = user_group.permissions
+        if not any(permission.name in required_permissions for permission in user_permissions):
+            abort(403, "No permission to access this feature.")
+
+        user_info = {
+            "login" : user.login, 
+            "group" : user.groups.name, 
+            "permissions" : [permission.name for permission in user.groups.permissions]
+        }
+        return jsonify(user_info)
+
     @app.route("/login", methods=["POST"])
     def login_user():
         """
