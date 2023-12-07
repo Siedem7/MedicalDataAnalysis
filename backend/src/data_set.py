@@ -18,6 +18,9 @@ class data_set():
         self.data_structure = None
         self.is_data_normalized = False
 
+    def is_data_norm(self):
+        return self.is_data_normalized
+
     def load_data(self, file_path: str):
         """
         Load file content from file.
@@ -26,8 +29,7 @@ class data_set():
             file_path (str): path to file with data set.
         """
         self.is_data_normalized = False
-        return pd.read_csv(file_path)
-
+        self.data =  pd.read_csv(file_path)
     
     def normalize_data(self, numerical_columns: list, categorical_columns: list, output_column: str):
         """

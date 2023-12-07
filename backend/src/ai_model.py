@@ -1,4 +1,4 @@
-from data_set import data_set
+from src.data_set import data_set
 import torch as torch
 import torch.nn as nn 
 import numpy as np
@@ -24,7 +24,7 @@ class AI_model():
         self.is_model_trained = False
 
 
-    def set_structure(self, data: data_set, layers: list):
+    def set_structure(self, data):
         """
         Load data for AI model.
 
@@ -32,11 +32,13 @@ class AI_model():
             training_data (data_set): training data.
             testing_data (data_set): testing data.
         """
-        self.data = data
-        
+        if not data.is_data_norm():
+            raise RuntimeError("Data not normalized")
 
+        self.data = data
+        numpy_data = self.data.data.to_numpy(dtype=np.float32)
         model = nn.Sequential()
-        model.append(nn.Linear(len(data.data[0])-1, 10))
+        model.append(nn.Linear(len(numpy_data[0])-1, 10))
         model.append(nn.ReLU())
         model.append(nn.Linear(10, 1))
         model.append(nn.Sigmoid())

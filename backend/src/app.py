@@ -2,6 +2,10 @@ import os
 
 from flask_cors import CORS
 from flask import Flask,  jsonify, request, abort
+
+from flask_socketio import SocketIO
+
+
 from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
 
@@ -9,6 +13,9 @@ from werkzeug.utils import secure_filename
 import datetime
 from src.database_models import *
 from src.functions import *
+
+from src.ai_model import AI_model
+from src.data_set import data_set
 
 
 def create_app(database_uri="sqlite:///project.db"):
@@ -21,11 +28,36 @@ def create_app(database_uri="sqlite:///project.db"):
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = database_uri
     db.init_app(app)
+    socketio = SocketIO(app)
 
     app.config["UPLOAD_FOLDER"] =  os.path.join(os.getcwd(), "data_files")
 
     CORS(app)
 
+    @socketio.on('message')
+    def handle_message(data):
+        print('received message: ' + data)
+
+    @app.route("/", methods=['GET']) 
+    def test_model():
+        file_path = db.session.execute(db.select(File).filter_by(id=1)).scalar_one().path
+        data_instance = data_set(name="Zbiór test", description="testowanie działania")
+        data_instance.load_data(file_path=file_path)
+       
+        data_instance.normalize_data(
+            numerical_columns=["Age", "RestingBP", "Cholesterol","FastingBS", "MaxHR", "Oldpeak"],
+            categorical_columns=["Sex", "ChestPainType", "RestingECG", "ExerciseAngina", "ST_Slope"],
+            output_column="HeartDisease"
+        )
+
+        model = AI_model(name="Test model", description="TESTOWANIE")
+        model.set_structure(data_instance)
+        model.create_model(0.9)
+
+        print(model.model)
+
+        return jsonify("HELLO")
+    
     @app.route("/groups", methods=["GET"]) 
     def get_groups():
         """ 
@@ -70,7 +102,7 @@ def create_app(database_uri="sqlite:///project.db"):
             abort(403, "No permission to access this feature.")
 
         users = db.session.execute(db.select(User)).scalars().all()
-        return jsonify({"users": [user.login for user in users]})
+        return jsonify({"users": [{"login": user.login, "id": user.id} for user in users]})
 
     @app.route("/login", methods=["POST"])
     def login_user():
@@ -304,7 +336,7 @@ def create_app(database_uri="sqlite:///project.db"):
         if status != 200:
             abort(status, description=result)
 
-
+        print( request.files.keys())
         if "csv_file" not in request.files.keys():
             abort(400, "Missing csv_file in request.")
 
@@ -335,12 +367,12 @@ def create_app(database_uri="sqlite:///project.db"):
 
         return jsonify("File uploaded succesfully")
 
-    return app
+    return app, socketio
 
 
 if __name__ == "__main__":
 
-    app = create_app()
+    app, socketio = create_app()
     isInitialized = os.path.exists("src/instance/project.db")
     if not os.path.exists("data_files"):
         os.mkdir("data_files")
@@ -350,5 +382,6 @@ if __name__ == "__main__":
 
         if not isInitialized:
             initialize_database()
-
-    app.run()
+    socketio.run(app)
+    #app.run()
+    
