@@ -24,7 +24,7 @@ class AI_model():
         self.is_model_trained = False
 
 
-    def set_structure(self, data):
+    def set_structure(self, data, layers):
         """
         Load data for AI model.
 
@@ -37,17 +37,28 @@ class AI_model():
 
         self.data = data
         numpy_data = self.data.data.to_numpy(dtype=np.float32)
+        
         model = nn.Sequential()
-        model.append(nn.Linear(len(numpy_data[0])-1, 10))
-        model.append(nn.ReLU())
-        model.append(nn.Linear(10, 1))
-        model.append(nn.Sigmoid())
+        model.append(nn.Linear(len(numpy_data[0])-1, layers[0]['output']))
+
+        for layer in layers[1:]:
+            match layer['function']:
+                case "Linear":
+                    model.append(nn.Linear(layer["input"], layer["output"]))
+                case "ReLU":
+                    model.append(nn.ReLU())
+                case "Sigmoid":
+                    model.append(nn.Sigmoid())
+                case "Tanh":
+                    model.append(nn.Tanh())
+
+    
 
         self.model = model
         self.is_model_trained = False
 
     
-    def create_model(self, training_procent: float):
+    def create_model(self, training_procent: float, socketio):
         """
         Create model for AI model.
 
@@ -78,7 +89,7 @@ class AI_model():
                 loss = loss_fn(outputs, Y_batch)
                 loss.backward()
                 optimizer.step()
-            print(f'Finished epoch {epoch}, latest loss {loss}')
+            socketio.emit("model_training", f'Finished epoch {epoch}, latest loss {loss}')
 
         with torch.no_grad():
             Y_pred = self.model(X_test)
@@ -92,7 +103,7 @@ class AI_model():
 
             # Calculate accuracy
             accuracy = np.mean(Y_pred_np == Y_test_np)
-            print(f"Accuracy: {accuracy}")
+            socketio.emit("model_training", f"Accuracy: {accuracy}")
 
         self.is_model_trained = True
 

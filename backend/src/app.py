@@ -2,13 +2,10 @@ import os
 
 from flask_cors import CORS
 from flask import Flask,  jsonify, request, abort
-
-from flask_socketio import SocketIO
-
+from flask_socketio import SocketIO, send, emit
 
 from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
-
 
 import datetime
 from src.database_models import *
@@ -34,30 +31,6 @@ def create_app(database_uri="sqlite:///project.db"):
 
     CORS(app)
 
-    @socketio.on('message')
-    def handle_message(data):
-        print('received message: ' + data)
-
-    @app.route("/", methods=['GET']) 
-    def test_model():
-        file_path = db.session.execute(db.select(File).filter_by(id=1)).scalar_one().path
-        data_instance = data_set(name="Zbiór test", description="testowanie działania")
-        data_instance.load_data(file_path=file_path)
-       
-        data_instance.normalize_data(
-            numerical_columns=["Age", "RestingBP", "Cholesterol","FastingBS", "MaxHR", "Oldpeak"],
-            categorical_columns=["Sex", "ChestPainType", "RestingECG", "ExerciseAngina", "ST_Slope"],
-            output_column="HeartDisease"
-        )
-
-        model = AI_model(name="Test model", description="TESTOWANIE")
-        model.set_structure(data_instance)
-        model.create_model(0.9)
-
-        print(model.model)
-
-        return jsonify("HELLO")
-    
     @app.route("/groups", methods=["GET"]) 
     def get_groups():
         """ 
@@ -366,6 +339,83 @@ def create_app(database_uri="sqlite:///project.db"):
         db.session.commit()
 
         return jsonify("File uploaded succesfully")
+    
+    @app.route("/create_model", methods=['POST']) 
+    def create_model():
+        """
+        Creates model based on request. Request should have authorization 
+        header with token used to authorize user and JSON body containing:
+            - file_id: used to crated dataset,
+            - model_name: name of model,
+            - model_desc: description of model,
+            - training_percent: (0-1) float value, indicating division 
+                 between training and test sets,
+            - categorical_columns: list of column names that shoud be converted to dummies,
+            - numerical_columns: list of column names that should be normalized with min max values,
+            - output_column: name of coulmn considered as output values, 
+            - layers: list of layers.
+
+            Layer structure:
+            First layer consist of "output" and creates linear function by default. This 
+            behaviour cannot be changed. Each layer (different then first) within the 
+            "layers" array consists of the following attributes:
+
+                "function" (required): Specifies the activation function or layer type to be used.
+                Supported Activation Functions:
+                    "ReLU": Rectified Linear Unit activation function.
+                    "Tanh": Hyperbolic Tangent activation function.
+                    "Sigmoid": Sigmoid activation function.
+                    "Linear": Represents a linear layer.
+            
+                "input" (required for "Linear" layers): Specifies the number of input units for the layer.
+
+                "output" (required for "Linear" layers): Specifies the number of output units for the layer.    
+
+        Requires CREATE_MODEL permission.
+
+        Request format: JSON
+        
+        Returns: 
+            200, Successfully created model.
+            400, Missing keys in the request. | Invalid values.
+            403, No permission to access this feature.
+        """
+        token = request.headers.get("Authorization")
+        status, result = authorize_permissions(token, ["CREATE_MODEL"])
+        if status != 200:
+            abort(status, result)
+
+
+
+        file_id = request.json["file_id"]
+        file = db.session.execute(db.select(File).filter_by(id=file_id)).scalar_one()
+        file_path = file.path
+        file_name = os.path.splitext(os.path.basename(file.path))[0]
+        data_instance = data_set(name=file_name, description=file.description)
+        data_instance.load_data(file_path=file_path)
+
+        numerical_columns =  request.json["numerical_columns"]
+        categorical_columns = request.json["categorical_columns"]
+        output_column = request.json["output_column"]
+
+        data_instance.normalize_data(
+            numerical_columns=numerical_columns,
+            categorical_columns=categorical_columns,
+            output_column=output_column
+        )
+
+        model_name = request.json["model_name"]
+        model_descritpion = request.json["model_desc"]
+        training_percent = request.json["training_percent"]
+        layers = request.json["layers"]
+        
+        model = AI_model(name=model_name, description=model_descritpion)
+        model.set_structure(data_instance, layers=layers)
+        model.create_model(training_percent, socketio)
+        
+        socketio.send(str(model.model))
+
+        return jsonify("Succesfully crated model.")
 
     return app, socketio
 
