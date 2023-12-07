@@ -1,12 +1,18 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { logout } from '../Utils/ApiUtils'
+import { getUsers, logout } from '../Utils/ApiUtils'
 
 import './DeleteAccount.css'
 
 export default function DeleteAccount() {
-  const [users, setUsers] = useState(["user1", "user2", "user3"]);
+  let token = localStorage.getItem('token') as string
+  const [users, setUsers] = useState([""]);
 
+  if (users[0] === "") {
+    getUsers(token).then((result) => {
+      setUsers(result)
+    });
+  }
 
   return (
     <>

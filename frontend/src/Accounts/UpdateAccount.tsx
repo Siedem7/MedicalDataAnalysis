@@ -1,13 +1,26 @@
 import React, { useState } from "react";
-import { logout } from "../Utils/ApiUtils";
+import { logout, getGroups, getUsers } from "../Utils/ApiUtils";
 import { Link } from "react-router-dom";
 
 import "./UpdateAccount.css"
 
 export default function UpdateAccount() {
-  const [groups, setGroups] = useState(["medical staff", "analyst", "admin"]);
-  const [users, setUsers] = useState(["user1", "user2", "user3"]);
+  let token = localStorage.getItem('token') as string
+  const [groups, setGroups] = useState([""]);
+  const [users, setUsers] = useState([""]);
 
+  if (groups[0] === "") {
+    getGroups(token).then((result) => {
+      setGroups(result)
+    });
+  }
+
+  if (users[0] === "") {
+    getUsers(token).then((result) => {
+      setUsers(result)
+    });
+  }
+  
   
   return (
     <>
