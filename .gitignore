@@ -42,3 +42,4 @@ backend/tests/__pycache__/
 backend/.pytest_cache
 backend/src/instance/
 backend/data_files
+backend/model_files

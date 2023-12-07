@@ -30,15 +30,22 @@ def create_app(database_uri="sqlite:///project.db"):
     socketio = SocketIO(app)
 
     app.config["UPLOAD_FOLDER"] =  os.path.join(os.getcwd(), "data_files")
+    app.config["MODEL_FILES"] = os.path.join(os.getcwd(), "model_files")
 
     CORS(app)
 
     @app.route("/", methods=["GET"])
     def test():
-        with open('Model gamma.pkl', 'rb') as file:
+        model_database = db.session.execute(db.select(PredictionModel).filter_by(id=1)).scalar_one()
+
+        with open(model_database.configuration, 'rb') as file:
             model = pickle.load(file)
 
+
+        print(model.data.data)
         print(model.data.get_data_structure())
+        print(model.data.is_data_normalized)
+        print(model.is_model_trained)
 
         return jsonify("taktak")
 
@@ -79,9 +86,8 @@ def create_app(database_uri="sqlite:///project.db"):
             abort(403, description=result)
 
         required_permissions = ["DELETE_USER_ACCOUNT", "UPDATE_USER_ACCOUNT"]
-        user_group = db.session().execute(db.select(Group).filter_by(id=result.group)).scalar_one()
         
-        user_permissions = user_group.permissions
+        user_permissions = result.groups.permissions
         if not any(permission.name in required_permissions for permission in user_permissions):
             abort(403, "No permission to access this feature.")
 
@@ -421,8 +427,9 @@ def create_app(database_uri="sqlite:///project.db"):
     @app.route("/create_model", methods=['POST']) 
     def create_model():
         """
-        Creates model based on request. Request should have authorization 
-        header with token used to authorize user and JSON body containing:
+        Creates model based on request. Model is then saved on local disk in 
+        order to reuse it.  Request should have authorization header with 
+        token used to authorize user and JSON body containing:
             - file_id: used to crated dataset,
             - model_name: name of model,
             - model_desc: description of model,
@@ -492,14 +499,27 @@ def create_app(database_uri="sqlite:///project.db"):
         model = AI_model(name=model_name, description=model_descritpion)
         model.set_structure(data_instance, layers=layers)
         model.create_model(epochs, batch_size, training_percent, socketio)
-        
+    
         socketio.send(str(model.model))
 
+        file_path = os.path.join( 
+            app.config["MODEL_FILES"], 
+            secure_filename(model.name + ".pkl") 
+        )
+
         # Store the object to a file
-        print(model.data.get_data_structure())
-        with open(model_name + '.pkl', 'wb') as file:
+        with open(file_path, 'wb') as file:
             pickle.dump(model, file)
 
+        model_database = PredictionModel()
+        model_database.configuration = file_path
+        model_database.modify_date = datetime.utcnow()
+        model_database.user = result.id
+        model_database.description = model.description
+        model_database.name = model.name
+        
+        db.session.add(model_database)
+        db.session.commit()
         return jsonify("Succesfully crated model.")
 
     return app, socketio
@@ -511,6 +531,10 @@ if __name__ == "__main__":
     isInitialized = os.path.exists("src/instance/project.db")
     if not os.path.exists("data_files"):
         os.mkdir("data_files")
+
+    if not os.path.exists("model_files"):
+        os.mkdir("model_files")
+
 
     with app.app_context():
         db.create_all()
