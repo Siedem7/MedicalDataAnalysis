@@ -41,18 +41,21 @@ class data_set():
             output_column (str): name of output column.
         """
         data_structure = dict()
-        data_structure['categorical_columns'] = categorical_columns
-        
+
         numercial_columns_list = list()
         for column in numerical_columns:
             numercial_columns_list.append({'name': column,'min': None, 'max': None, 'mean': None, 'median': None})
 
+        data_structure['categorical_columns'] = list()
         data_structure['numerical_columns'] = numercial_columns_list
         data_structure['output_column'] = output_column
-
-        self.data = pd.get_dummies(self.data, columns=data_structure['categorical_columns'])
+        
+        original_columns = self.data.columns.tolist();
+        self.data = pd.get_dummies(self.data, columns=categorical_columns)
         output_column = self.data.pop(data_structure['output_column'])
         self.data.insert(len(self.data.columns), output_column.name, output_column)
+
+        data_structure['categorical_columns'] = [col for col in self.data.columns.tolist() if col not in original_columns]
 
         for column in data_structure['numerical_columns']:
             column['min'] = self.data[column['name']].min()
