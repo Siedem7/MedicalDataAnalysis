@@ -58,10 +58,10 @@ class data_set():
         data_structure['categorical_columns'] = [col for col in self.data.columns.tolist() if col not in original_columns]
 
         for column in data_structure['numerical_columns']:
-            column['min'] = self.data[column['name']].min()
-            column['max'] = self.data[column['name']].max()
-            column['mean'] = self.data[column['name']].mean()
-            column['median'] = self.data[column['name']].median()
+            column['min'] = float(self.data[column['name']].min())
+            column['max'] = float(self.data[column['name']].max())
+            column['mean'] = float(self.data[column['name']].mean())
+            column['median'] = float(self.data[column['name']].median())
             self.data[column['name']] = (self.data[column['name']] - self.data[column['name']].min()) / (self.data[column['name']].max() - self.data[column['name']].min())
 
         self.data_structure = data_structure

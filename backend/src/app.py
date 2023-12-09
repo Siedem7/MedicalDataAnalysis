@@ -34,21 +34,6 @@ def create_app(database_uri="sqlite:///project.db"):
 
     CORS(app)
 
-    @app.route("/", methods=["GET"])
-    def test():
-        model_database = db.session.execute(db.select(PredictionModel).filter_by(id=1)).scalar_one()
-
-        with open(model_database.configuration, 'rb') as file:
-            model = pickle.load(file)
-
-
-        print(model.data.data)
-        print(model.data.get_data_structure())
-        print(model.data.is_data_normalized)
-        print(model.is_model_trained)
-
-        return jsonify("taktak")
-
     @app.route("/groups", methods=["GET"]) 
     def get_groups():
         """ 
@@ -398,7 +383,13 @@ def create_app(database_uri="sqlite:///project.db"):
     @app.route("/get_datasets", methods=["GET"])
     def get_datasets():
         """
+        Get list of datasets available in the system.
 
+        Requires MANAGE_FILE permission.
+
+        Returns:
+            200, List of users.
+            403, No permission to access this feature.
         """
         token = request.headers.get("Authorization")
         status, result = authorize_permissions(token, ["MANAGE_FILE"])
@@ -521,6 +512,33 @@ def create_app(database_uri="sqlite:///project.db"):
         db.session.add(model_database)
         db.session.commit()
         return jsonify("Succesfully crated model.")
+    
+
+    @app.route("/input_structure/<model_id>", methods=["GET"])
+    def get_input_structure(model_id):
+        """
+        Get dictionary representing data structure, needed to properly
+        upload data to predict. 
+
+        Requires USE_MODEL permission.
+
+        Returns:
+            200, List of users.
+            403, No permission to access this feature.
+        
+        """
+        token = request.headers.get("Authorization")
+        status, result = authorize_permissions(token, ["USE_MODEL"])
+
+        if (status != 200):
+            abort(status, result)
+
+        model_database = db.session.execute(db.select(PredictionModel).filter_by(id=model_id)).scalar_one()
+
+        with open(model_database.configuration, 'rb') as file:
+            model = pickle.load(file)
+
+        return jsonify(model.data.get_data_structure())
 
     return app, socketio
 
