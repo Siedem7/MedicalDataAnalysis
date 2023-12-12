@@ -4,6 +4,11 @@ import { logout, getGroups, createUser } from '../Utils/ApiUtils'
 
 import "./CreateAccount.css"
 
+/**
+ * React component responsible for creating a new user account.
+ * @component
+ * @returns {JSX.Element} Rendered JSX element.
+ */
 export default function CreateAccount() {
   let token = localStorage.getItem('token') as string
   const [groups, setGroups] = useState([""]);
