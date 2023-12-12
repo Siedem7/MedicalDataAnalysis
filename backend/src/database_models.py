@@ -23,7 +23,7 @@ class User(db.Model):
 class PredictionModel(db.Model):
     """Prediction model model, used for database mapping."""
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(String, unique=True,  nullable=False)
     description: Mapped[str] = mapped_column(String, nullable=False)
     configuration: Mapped[str] = mapped_column(String, nullable=False)
     modify_date: Mapped[datetime.datetime] = mapped_column(

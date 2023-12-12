@@ -114,7 +114,7 @@ class AI_model():
         Parameters:
             data (): data to predict.
         """
-        if self.is_model_trained == False:
+        if not self.is_model_trained:
             raise Exception("Model is not trained")
         return self.model(data)
 
