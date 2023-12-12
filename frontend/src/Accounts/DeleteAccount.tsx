@@ -4,13 +4,22 @@ import { getUsers, logout } from '../Utils/ApiUtils'
 
 import './DeleteAccount.css'
 
+/**
+ * Functional component for deleting user accounts.
+ * @returns {JSX.Element} JSX element representing the DeleteAccount component.
+ */
 export default function DeleteAccount() {
-  let token = localStorage.getItem('token') as string
+  // Retrieve the user token from local storage
+  let token = localStorage.getItem('token') as string;
+  
+  // State to store the list of users
   const [users, setUsers] = useState([""]);
 
+  // Fetch users and update the state if it's empty
   if (users[0] === "") {
     getUsers(token).then((result) => {
-      setUsers(result)
+      // Map the user objects to strings containing id and login
+      setUsers(result.map(user => `${user.id}:${user.login}`));
     });
   }
 

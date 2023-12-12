@@ -81,7 +81,7 @@ export async function getGroups(token: string): Promise<string[]> {
     });
 }
 
-export async function getUsers(token: string): Promise<string[]> {
+export async function getUsers(token: string): Promise<{ id: number; login: string }[]> {
   var myHeaders = new Headers();
   myHeaders.append("Authorization", "Bearer " + token);
 
@@ -89,16 +89,19 @@ export async function getUsers(token: string): Promise<string[]> {
     method: 'GET',
     headers: myHeaders,
   };
-  
+
   return await fetch("http://127.0.0.1:5000/users", { ...requestOptions, redirect: 'follow' })
     .then(response => {
       if (response.status === 401) {
         throw new Error('Unauthorized');
       } else {
-        return response.text().then((text) => {
-          let temp:string[] = [];
-          for(let i = 0; i < JSON.parse(text).users.length; i++){
-            temp.push(JSON.parse(text).users[i].login);
+        return response.json().then((data) => {
+          let temp: { id: number; login: string }[] = [];
+          for (let i = 0; i < data.users.length; i++) {
+            temp.push({
+              id: data.users[i].id,
+              login: data.users[i].login,
+            });
           }
           return temp;
         });

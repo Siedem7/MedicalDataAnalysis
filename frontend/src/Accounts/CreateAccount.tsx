@@ -10,12 +10,16 @@ import "./CreateAccount.css"
  * @returns {JSX.Element} Rendered JSX element.
  */
 export default function CreateAccount() {
+  // Retrieve the user token from local storage
   let token = localStorage.getItem('token') as string
+
+  // State to store the list of groups, username, password, and selected group
   const [groups, setGroups] = useState([""]);
   const [username, setUsername] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [group, setGroup] = React.useState('')
   
+  // Fetch groups and update the state if it's empty
   if (groups[0] === "") {
     getGroups(token).then((result) => {
       setGroups(result)

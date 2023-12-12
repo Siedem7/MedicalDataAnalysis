@@ -4,20 +4,30 @@ import { Link } from "react-router-dom";
 
 import "./UpdateAccount.css"
 
+/**
+ * Functional component for updating user accounts.
+ * @returns {JSX.Element} JSX element representing the UpdateAccount component.
+ */
 export default function UpdateAccount() {
+  // Retrieve the user token from local storage
   let token = localStorage.getItem('token') as string
+
+  // State to store the list of groups and users
   const [groups, setGroups] = useState([""]);
   const [users, setUsers] = useState([""]);
 
+  // Fetch groups and update the state if it's empty
   if (groups[0] === "") {
     getGroups(token).then((result) => {
       setGroups(result)
     });
   }
 
+  // Fetch users and update the state if it's empty
   if (users[0] === "") {
     getUsers(token).then((result) => {
-      setUsers(result)
+      // Map the user objects to strings containing id and login
+      setUsers(result.map(user => `${user.id}:${user.login}`));
     });
   }
   
