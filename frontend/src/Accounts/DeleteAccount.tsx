@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getUsers, logout } from '../Utils/ApiUtils'
+import { getUsers, logout, deleteUser } from '../Utils/ApiUtils'
 
 import './DeleteAccount.css'
 
@@ -11,15 +11,16 @@ import './DeleteAccount.css'
 export default function DeleteAccount() {
   // Retrieve the user token from local storage
   let token = localStorage.getItem('token') as string;
-  
+  let idToDelete: Number = -1;
+
   // State to store the list of users
-  const [users, setUsers] = useState([""]);
+  const [users, setUsers] = useState(Array<{ id: Number; login: String; }>);
 
   // Fetch users and update the state if it's empty
-  if (users[0] === "") {
+  if (users.length === 0) {
     getUsers(token).then((result) => {
       // Map the user objects to strings containing id and login
-      setUsers(result.map(user => `${user.id}:${user.login}`));
+      setUsers(result);
     });
   }
 
@@ -32,18 +33,22 @@ export default function DeleteAccount() {
 
       <div className="choose-user-container">
         <p>Choose user:</p>
-        <select name="users" id="users">
-         <option disabled selected hidden> select user </option>
+        <select name="userSelection" id="userSelection" onChange={(ev) => idToDelete = parseInt(ev.target.value)}>
+         <option disabled selected hidden> Select User </option>
           {
             users.map((item) =>
-            <option value={item}>{item}</option>
+            <option value={item.id.toString()}>{item.login}</option>
           )}
         </select>
       </div>  
 
       <div className='delete-button'>
-        <button>
-          delete account
+        <button onClick={() =>
+            {
+              deleteUser(token, idToDelete)
+              setUsers(users.filter((item) => { return item.id !== idToDelete }))
+            }}>
+          Delete User
         </button>    
       </div>
 

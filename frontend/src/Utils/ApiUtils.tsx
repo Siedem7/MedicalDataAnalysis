@@ -23,7 +23,7 @@ export function loginForm(login: string, password: string) {
         window.location.href = '/'
       }
       else {
-        alert('Wrong login or password.')
+        alert('Error occured.')
       }
     })
     .catch(error => console.log('error', error));
@@ -81,7 +81,7 @@ export async function getGroups(token: string): Promise<string[]> {
     });
 }
 
-export async function getUsers(token: string): Promise<{ id: number; login: string }[]> {
+export async function getUsers(token: string): Promise<{ id: Number; login: String }[]> {
   var myHeaders = new Headers();
   myHeaders.append("Authorization", "Bearer " + token);
 
@@ -92,8 +92,8 @@ export async function getUsers(token: string): Promise<{ id: number; login: stri
 
   return await fetch("http://127.0.0.1:5000/users", { ...requestOptions, redirect: 'follow' })
     .then(response => {
-      if (response.status === 401) {
-        throw new Error('Unauthorized');
+      if (response.status === 403) {
+        throw new Error('Permission denied');
       } else {
         return response.json().then((data) => {
           let temp: { id: number; login: string }[] = [];
@@ -130,18 +130,18 @@ export function createUser(token: string, login: string, password: string, group
     body: raw
   };
   
-  fetch("http://127.0.0.1:5000/users", { ...requestOptions, redirect: 'follow' })
+  fetch("http://127.0.0.1:5000/create_user", { ...requestOptions, redirect: 'follow' })
     .then(response => {
-      if (response.status === 401) {
-        throw new Error('Unauthorized');
+      if (response.status === 403) {
+        throw new Error('Permission denied');
       } 
       else if (response.status === 200){
         return response.text().then((text) => {
-          console.log(text);
+          alert(text);
         });
       }
       else{
-        alert("No username or password.")
+        alert("Error occured.")
       }
     })
     .catch(error => {
@@ -149,3 +149,76 @@ export function createUser(token: string, login: string, password: string, group
       throw error;
     });
 }
+
+export function deleteUser(token: String, id: Number) {
+  var myHeaders = new Headers();
+  myHeaders.append("Content-Type", "application/json");
+  myHeaders.append("Authorization", "Bearer " + token);
+
+  var raw = JSON.stringify({
+    "user_id": id
+  });
+
+  var requestOptions = {
+    method: 'DELETE',
+    headers: myHeaders,
+    body: raw
+  };
+  
+  fetch("http://127.0.0.1:5000/delete_user", { ...requestOptions, redirect: 'follow' })
+    .then(response => {
+      if (response.status === 403) {
+        throw new Error('Permission denied');
+      } 
+      else if (response.status === 200){
+        return response.text().then((text) => {
+          alert(text);
+        });
+      }
+      else{
+        alert("User is not deleted. Error occured.")
+      }
+    })
+    .catch(error => {
+      console.log('error', error);
+      throw error;
+    });
+  }
+
+  export function updateUser(token: String, id: Number, login: String, password: String, group: String) {
+    var myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("Authorization", "Bearer " + token);
+  
+    var raw = JSON.stringify({
+      "user_id": id,
+      "login": login,
+      "password": password,
+      "group": group
+    });
+  
+    var requestOptions = {
+      method: 'PUT',
+      headers: myHeaders,
+      body: raw
+    };
+    
+    fetch("http://127.0.0.1:5000/update_user", { ...requestOptions, redirect: 'follow' })
+      .then(response => {
+        if (response.status === 403) {
+          throw new Error('Permission denied');
+        } 
+        else if (response.status === 200){
+          return response.text().then((text) => {
+            alert(text);
+          });
+        }
+        else{
+          alert("User is not updated. Error occured.")
+        }
+      })
+      .catch(error => {
+        console.log('error', error);
+        throw error;
+      });
+    }

@@ -14,10 +14,10 @@ export default function CreateAccount() {
   let token = localStorage.getItem('token') as string
 
   // State to store the list of groups, username, password, and selected group
-  const [groups, setGroups] = useState([""]);
-  const [username, setUsername] = React.useState('')
-  const [password, setPassword] = React.useState('')
-  const [group, setGroup] = React.useState('')
+  const [groups, setGroups] = useState([""])
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [group, setGroup] = useState('')
   
   // Fetch groups and update the state if it's empty
   if (groups[0] === "") {
@@ -60,7 +60,7 @@ export default function CreateAccount() {
 
         <div className="add-user-button">
           <button onClick={() => createUser(token, username, password, group)}>
-            add user
+            Add User
           </button>
         </div>
 
