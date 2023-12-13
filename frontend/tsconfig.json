@@ -24,6 +24,8 @@
     "src",
     "Login",
     "MainPage",
-    "Accounts"
+    "Accounts",
+    "CreateModel",
+    "FileManagement"
   ]
 }

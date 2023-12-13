@@ -1,0 +1,15 @@
+.layer-container{
+    border: 1px white solid;
+    border-radius: 10px;
+    width: 40vw;
+    margin: 100px auto;
+    padding: 20px;
+}
+
+.layer{
+    border: 1px grey solid;
+    margin: 10px;
+    padding: 5px;
+    text-align: center;
+    font-size: 20px;
+}
