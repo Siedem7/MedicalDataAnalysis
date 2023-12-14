@@ -37,7 +37,9 @@ export default function CreateModel() {
   // Retrieve the user token from local storage
   let token = localStorage.getItem("token") as string;
 
-  const [dataStructure, setDataStrucure] = useState();
+  let numericalColumns = Array<String>()
+  let categoricalColumns =  Array<String>()
+  let outputColumn: String = ""
 
   const [layers, setLayers] = useState([
     { function: "Tanh", input: null, output: null },
@@ -48,9 +50,10 @@ export default function CreateModel() {
     { function: "Linear", input: 10, output: 1 },
   ]);
 
-  const [firstLayerOutput, setFirstLayerOutput] = useState(10);
-  const [datasets, setDatasets] = useState(Array<DataSet>);
-  const [selectedDataset, setSelectedDataset] = useState<DataSet>();
+  const [firstLayerOutput, setFirstLayerOutput] = useState(10)
+  const [datasets, setDatasets] = useState(Array<DataSet>)
+  const [selectedDataset, setSelectedDataset] = useState<DataSet>()
+  const [isSelectedDataset, setIsSelectedDataset] = useState(false)
 
   useEffect(() => {
     getAvailableDatasets(token, setDatasets);
@@ -62,7 +65,7 @@ export default function CreateModel() {
         <h1>Create model</h1>
         <button onClick={logout}>log out</button>
       </div>
-      {selectedDataset ? (
+      {isSelectedDataset ? (
         <div>
           <div className="layer-container">
             <div className="layer input-layer">
@@ -91,8 +94,11 @@ export default function CreateModel() {
           <div>
             <button>Check</button>
           </div>
-          <button onClick={()=>{setSelectedDataset(undefined)}}>
-            Change dataset
+          <button onClick={()=>{setIsSelectedDataset(false)}}>
+            Change Dataset
+          </button>
+          <button>
+            Add Layer
           </button>
         </div>
       ) : (
@@ -116,6 +122,57 @@ export default function CreateModel() {
               <option value={item.file_id}>{item.file_name}</option>
             ))}
           </select>
+
+          {selectedDataset ? 
+          <>
+            <form action="">
+            {selectedDataset.columns.map((element) => {
+              return (
+              <>
+                <label  htmlFor={element + "_column"}>{element}</label>
+                <select name={element + "_column"} id={element + "_column"} >
+                  <option value="categorical_columns">Categorical</option>
+                  <option value="numerical_columns">Numerical</option>
+                  <option value="output">Output</option>
+                </select>
+                <br></br>
+              </>
+              )
+            })}
+            </form>
+            <button onClick={() => {
+              const validate = () => {
+                  let isOutputValid = false;
+                  selectedDataset.columns.map((element) => {
+                  
+                  let selectedType = document.getElementById(element + "_column") as HTMLSelectElement
+                  switch (selectedType.value) {
+                    case "categorical_columns": 
+                      categoricalColumns.push(element)
+                      break
+                    case "numerical_columns":
+                      numericalColumns.push(element)
+                      break
+                    case "output":
+                      isOutputValid = outputColumn === ""
+                      outputColumn = element
+                      break
+                  }
+                })
+                return isOutputValid
+              }
+              if (validate()) {
+                setIsSelectedDataset(true) 
+              }
+              else {
+                numericalColumns = Array<String>()
+                categoricalColumns =  Array<String>()
+                outputColumn = ""
+                alert("There has to be exactly 1 column marked as output.")
+              }
+              }}>Accept</button>
+          </> 
+          : null}
         </div>
       )}
       <div className="back-button">

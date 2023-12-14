@@ -284,10 +284,7 @@ export function updateUser(
 
 export function getAvailableDatasets(token: String, setDataSet: React.Dispatch<React.SetStateAction<DataSet[]>>) {
   var myHeaders = new Headers();
-  myHeaders.append(
-    "Authorization",
-    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDI1ODA5NjMsImlhdCI6MTcwMjQ5NDU2Mywic3ViIjoyfQ.-RSDOCGRbbBI_7Rk440FiorcLKaELS8bknWYojwfRss"
-  );
+  myHeaders.append("Authorization", "Bearer " + token);
 
   var requestOptions = {
     method: "GET",
