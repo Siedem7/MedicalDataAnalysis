@@ -1,13 +1,15 @@
+import shutil
 import pytest
 import jwt
 from datetime import datetime, timedelta
-from src.functions import generate_token, hash_password
-from src.database_models import db, User
+from src.functions import generate_token
 from pathlib import Path
 
 resources = Path(__file__).parent / "resources"
 
-# pytest -v
+# To run all tests type: pytest -v in command line
+# To run single test type: pytest backend/tests/<test_file_name.py>::<test_function> in command line
+
 @pytest.mark.parametrize("token, statuscode", [
     (jwt.encode({
         'exp': datetime.utcnow() + timedelta(days=1),
@@ -17,13 +19,14 @@ resources = Path(__file__).parent / "resources"
     ("token", 401)])
 def test_get_groups(token, statuscode, client, app):
     """
-    GIVEN user token, expected status, test client, flask application
-    WHEN get groups from database
-    THEN function should return json with groups if token is correct
+    Test of get_groups method in app.py
     """
+    #GIVEN
     with app.app_context():
+        #WHEN
         result = client.get("/groups", headers={'Authorization': 'Bearer ' + token})
-    assert result.status_code == statuscode
+        #THEN
+        assert result.status_code == statuscode
 
 
 @pytest.mark.parametrize("token, statuscode", [
@@ -40,19 +43,14 @@ def test_get_groups(token, statuscode, client, app):
     ("token", 401)])
 def test_get_users(token, statuscode, client, app):
     """
-    GIVEN user token, expected status, test client, flask application
-    WHEN get registerd users from database
-    THEN function should return json with users if token is correct
+    Test of get_users method in app.py
     """
+    #GIVEN
     with app.app_context():
-        user = User(login="analyst",
-                password=hash_password("analyst"),
-                password_expire_date=datetime.utcnow() + timedelta(days=30),
-                group=2)
-        db.session.add(user)
-        db.session.commit()
+        #WHEN
         result = client.get("/users", headers={'Authorization': 'Bearer ' + token})
-    assert result.status_code == statuscode
+        #THEN
+        assert result.status_code == statuscode
 
 
 @pytest.mark.parametrize("token, user_id, statuscode", [
@@ -74,19 +72,14 @@ def test_get_users(token, statuscode, client, app):
     ("token", 1, 401)])    
 def test_get_user(token, user_id, statuscode, client, app):
     """
-    GIVEN user token, user_id, expected status, test client, flask application
-    WHEN get user info from database
-    THEN function should return json with user info if token is correct
+    Test of get_user method in app.py
     """
+    #GIVEN
     with app.app_context():
-        user = User(login="analyst",
-                password=hash_password("analyst"),
-                password_expire_date=datetime.utcnow() + timedelta(days=30),
-                group=2)
-        db.session.add(user)
-        db.session.commit()
+        #WHEN
         result = client.get("/user/"+ str(user_id), headers={'Authorization': 'Bearer ' + token})
-    assert result.status_code == statuscode
+        #THEN
+        assert result.status_code == statuscode
 
 
 @pytest.mark.parametrize("test_json, statuscode", [
@@ -94,11 +87,12 @@ def test_get_user(token, user_id, statuscode, client, app):
     ({"login": "user", "password": "123"}, 404)])
 def test_login_user(test_json, statuscode, client):
     """
-    GIVEN json with login and password, expected status, test client
-    WHEN entered data to server
-    THEN function should generate token if login and password are correct
+    Test of login_user method in app.py
     """
+    #GIVEN - test_json, expected statuscode, test client
+    #WHEN
     result = client.post("/login", json = test_json)
+    #THEN
     assert result.status_code == statuscode
 
 
@@ -116,13 +110,14 @@ def test_login_user(test_json, statuscode, client):
     ("token", 401)])
 def test_get_permissions(token, statuscode, client, app):
     """
-    GIVEN bearer token, expected status, test client, flask application
-    WHEN authorize token
-    THEN function should return user's permissions if token is correct
+    Test of get_permissions method in app.py
     """
+    #GIVEN
     with app.app_context():
+        #WHEN
         result = client.get("/permissions", headers={'Authorization': 'Bearer ' + token})
-    assert result.status_code == statuscode
+        #THEN
+        assert result.status_code == statuscode
 
 
 @pytest.mark.parametrize("token, user_json, statuscode",[(jwt.encode({
@@ -148,19 +143,14 @@ def test_get_permissions(token, statuscode, client, app):
     }, 'some key', algorithm='HS256'),{"login": "admin", "password": "admin", "group": "admin"}, 403)])
 def test_create_user(token, user_json, statuscode, client, app):
     """
-    GIVEN token, json with user data, expected status, test client, flask application
-    WHEN entered token and user data to server
-    THEN function should create new user if token has permission to create user and user data is correct
+    Test of create_user method in app.py
     """
+    #GIVEN
     with app.app_context():
-        user = User(login="analyst",
-                password=hash_password("analyst"),
-                password_expire_date=datetime.utcnow() + timedelta(days=30),
-                group=2)
-        db.session.add(user)
-        db.session.commit()
+        #WHEN
         result = client.post("/create_user", headers={'Authorization': 'Bearer ' + token}, json = user_json)
-    assert result.status_code == statuscode
+        #THEN
+        assert result.status_code == statuscode
 
 
 @pytest.mark.parametrize("token, user_id, statuscode", [
@@ -187,20 +177,15 @@ def test_create_user(token, user_json, statuscode, client, app):
     }, 'some key', algorithm='HS256'), {"user_id": 2}, 403)])
 def test_delete_user(token, user_id, statuscode, client, app):
     """
-    GIVEN token, user id , expected status, test client, flask application
-    WHEN create user and enter token and user id to delete
-    THEN function should delete user with entered id if token has permission to delete user and user id is correct
+    Test of delete_user method in app.py
     """
+    #GIVEN
     with app.app_context():
-        user = User(login="analyst",
-                password=hash_password("analyst"),
-                password_expire_date=datetime.utcnow() + timedelta(days=30),
-                group=2)
-        db.session.add(user)
-        db.session.commit()
         client.post("/create_user", headers={'Authorization': 'Bearer ' + generate_token(1)}, json = {"login": "login", "password": "admin", "group": "analyst"})
+        #WHEN
         result = client.delete("/delete_user", headers={'Authorization': 'Bearer ' + token}, json = user_id)
-    assert result.status_code == statuscode
+        #THEN
+        assert result.status_code == statuscode
 
 
 @pytest.mark.parametrize("token, parameter_json, statuscode",[ 
@@ -252,22 +237,15 @@ def test_delete_user(token, user_id, statuscode, client, app):
     }, 'some key', algorithm='HS256'), {"user_id": 2, "login": "newlogin"}, 403)])
 def test_update_user(token, parameter_json, statuscode, client, app):
     """
-    GIVEN token, parameter to update , expected status, test client, flask application
-
-    WHEN create user and enter token and user parameter to update
-
-    THEN function should update user's parameters if token has permission to update user and entered parameters are correct
+    Test of update_user method in app.py
     """
+    #GIVEN
     with app.app_context():
-        user = User(login="analyst",
-                password=hash_password("analyst"),
-                password_expire_date=datetime.utcnow() + timedelta(days=30),
-                group=2)
-        db.session.add(user)
-        db.session.commit()
+        #WHEN
         result = client.put("/update_user", headers={'Authorization': 'Bearer ' + token}, 
                             json = parameter_json)
-    assert result.status_code == statuscode
+        #THEN
+        assert result.status_code == statuscode
 
 
 @pytest.mark.parametrize("token, user_data, statuscode", [
@@ -289,22 +267,15 @@ def test_update_user(token, parameter_json, statuscode, client, app):
     ("token",{"csv_file": "file", "description": "description"}, 401)])
 def test_upload_file(token, user_data, statuscode, client, app):
     """
-    GIVEN token, file and description, expected status, test client, flask application
-
-    WHEN upload file to database
-
-    THEN function should upload file if token and entered data are correct
+    Test of upload_file method in app.py
     """
+    #GIVEN
     with app.app_context():
-        user = User(login="analyst",
-                password=hash_password("analyst"),
-                password_expire_date=datetime.utcnow() + timedelta(days=30),
-                group=2)
-        db.session.add(user)
-        db.session.commit()
+        #WHEN
         result = client.post("/upload_file", headers={'Authorization': 'Bearer ' + token}, content_type='multipart/form-data',
                              data= user_data)
-    assert result.status_code == statuscode
+        #THEN
+        assert result.status_code == statuscode
 
 
 
@@ -322,21 +293,14 @@ def test_upload_file(token, user_data, statuscode, client, app):
     ("token", 401)])
 def test_get_datasets(token, statuscode, client, app):
     """
-    GIVEN token, expected status, test client, flask application
-
-    WHEN get datasets from database
-
-    THEN function should return datasets from database if token is correct
+    Test of get_permissions method in app.py
     """
+    #GIVEN
     with app.app_context():
-        user = User(login="analyst",
-                password=hash_password("analyst"),
-                password_expire_date=datetime.utcnow() + timedelta(days=30),
-                group=2)
-        db.session.add(user)
-        db.session.commit()
+        #WHEN
         result = client.get("/get_datasets", headers={'Authorization': 'Bearer ' + token})
-    assert result.status_code == statuscode
+        #THEN
+        assert result.status_code == statuscode
 
 
 @pytest.mark.parametrize("token, model, statuscode", [
@@ -387,34 +351,27 @@ def test_get_datasets(token, statuscode, client, app):
     "batch_size": 100}, 200)])
 def test_create_model(token, model, statuscode, client, app):
     """
-    GIVEN token, model in JSON format, expected status, test client, flask application
-
-    WHEN create and add model to database
-
-    THEN function should create and add model if token and entered data are correct
+    Test of create_model method in app.py
     """
+    #GIVEN
     with app.app_context():
-        user = User(login="analyst",
-                password=hash_password("analyst"),
-                password_expire_date=datetime.utcnow() + timedelta(days=30),
-                group=2)
-        db.session.add(user)
-        db.session.commit()
+        #WHEN
         result = client.post("/create_model", headers={'Authorization': 'Bearer ' + token}, 
                              json = model)
-    assert result.status_code == statuscode    
+        #THEN
+        assert result.status_code == statuscode    
 
 
 @pytest.mark.parametrize("token, model_id, statuscode", [
     (jwt.encode({
         'exp': datetime.utcnow() + timedelta(days=1),
         'iat': datetime.utcnow(),
-        'sub': 2
+        'sub': 3
     }, 'some key', algorithm='HS256'), 1, 200),
     (jwt.encode({
         'exp': datetime.utcnow() + timedelta(days=1),
         'iat': datetime.utcnow(),
-        'sub': 2
+        'sub': 3
     }, 'some key', algorithm='HS256'), 10, 404),
     (jwt.encode({
         'exp': datetime.utcnow() + timedelta(days=1),
@@ -424,19 +381,15 @@ def test_create_model(token, model, statuscode, client, app):
     ("token", 1, 401)])
 def test_get_input_structure(token, model_id, statuscode, client, app):
     """
-    GIVEN token, model id, expected status, test client, flask application
-
-    WHEN get input structure
-
-    THEN function should return input structure if token is correct and model exists
+    Test of get_input_structure method in app.py
     """
+    #GIVEN
     with app.app_context():
-        user = User(login="medical_staff",
-                password=hash_password("medical_staff"),
-                password_expire_date=datetime.utcnow() + timedelta(days=30),
-                group=3)
-        db.session.add(user)
-        db.session.commit()
+        #WHEN
         result = client.get("/input_structure/"+ str(model_id), headers={'Authorization': 'Bearer ' + token})
-    assert result.status_code == statuscode     
+        #THEN
+        assert result.status_code == statuscode     
    
+def tearDownModule():
+    shutil.rmtree("./backend/tests/resources/model_files")
+    shutil.rmtree("./backend/tests/resources/data_files")

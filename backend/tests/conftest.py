@@ -1,26 +1,28 @@
-from datetime import datetime
+from datetime import datetime,timedelta
 import pytest
 import os
 from src.app import create_app
-from src.database_models import db
-from src.functions import initialize_database
-from src.database_models import File
+from src.functions import initialize_database, hash_password
+from src.database_models import File, User, PredictionModel, db
 
 @pytest.fixture()
 def app():
+    """
+    Method creates flask application for testing purposes
+    """
     app,socket = create_app("sqlite://")
     app.config.update({
         "TESTING": True,
     })
-    app.config["UPLOAD_FOLDER"] =  os.path.join(os.getcwd(), "backend", "tests", "data_files")
+    app.config["UPLOAD_FOLDER"] =  os.path.join(os.getcwd(), "backend", "tests", "resources", "data_files")
 
     if not os.path.exists(app.config["UPLOAD_FOLDER"]):
-        os.mkdir("./backend/tests/data_files")
+        os.mkdir("./backend/tests/resources/data_files")
 
-    app.config["MODEL_FILES"] = os.path.join(os.getcwd(), "backend", "tests", "model_files")
+    app.config["MODEL_FILES"] = os.path.join(os.getcwd(), "backend", "tests", "resources", "model_files")
 
     if not os.path.exists(app.config["MODEL_FILES"]):
-        os.mkdir("./backend/tests/model_files")
+        os.mkdir("./backend/tests/resources/model_files")
 
     with app.app_context():
         db.create_all()
@@ -32,7 +34,27 @@ def app():
         database_file.path = ".\\backend\\tests\\resources\\test_file.csv"
         database_file.user = 1
 
+        analyst = User(login="analyst",
+                password=hash_password("analyst"),
+                password_expire_date=datetime.utcnow() + timedelta(days=30),
+                group=2)
+        
+        medical_staff = User(login="medical_staff",
+                password=hash_password("medical_staff"),
+                password_expire_date=datetime.utcnow() + timedelta(days=30),
+                group=3)
+        
+        model = PredictionModel()
+        model.configuration = ".\\backend\\tests\\resources\\test_model.pkl"
+        model.modify_date = datetime.utcnow()
+        model.user = 1
+        model.description = "This model is for tests"
+        model.name = "test_model"
+        
         db.session.add(database_file)
+        db.session.add(analyst)
+        db.session.add(medical_staff)
+        db.session.add(model)
         db.session.commit()
     yield app
 
