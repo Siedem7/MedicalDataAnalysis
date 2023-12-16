@@ -51,13 +51,18 @@ export default function CreateModel() {
   ]);
 
   const [firstLayerOutput, setFirstLayerOutput] = useState(10)
-  const [datasets, setDatasets] = useState(Array<DataSet>)
+  const [datasets, setDatasets] = useState<Array<DataSet>>([]);
   const [selectedDataset, setSelectedDataset] = useState<DataSet>()
   const [isSelectedDataset, setIsSelectedDataset] = useState(false)
 
   useEffect(() => {
     getAvailableDatasets(token, setDatasets);
   }, []);
+  const addLayer = () => {
+    setLayers( [
+      { function: "NewLayer", input: null, output: null },
+    ]);
+  };
 
   return (
     <>
@@ -78,7 +83,7 @@ export default function CreateModel() {
             </div>
 
             {layers.map((layer: Layer) => (
-              <div className="layer">
+              <div className="layer" key={layer.function}>
                 {layer.input === null ? (
                   layer.function
                 ) : (
@@ -97,7 +102,7 @@ export default function CreateModel() {
           <button onClick={()=>{setIsSelectedDataset(false)}}>
             Change Dataset
           </button>
-          <button>
+          <button className="add-layer-button" onClick={addLayer}>
             Add Layer
           </button>
         </div>
@@ -177,7 +182,13 @@ export default function CreateModel() {
       )}
       <div className="back-button">
         <Link to="/">Back</Link>
-      </div>
-    </>
+        </div>
+        <div className="create-model-button">Create Model</div>
+        <div className="insert-training-data-button">
+          Insert Training Data (File Dialog)
+        </div>
+        <div className="preprocess-data-button">Preprocess Data</div>
+      </>
   );
+  
 }

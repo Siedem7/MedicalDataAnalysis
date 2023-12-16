@@ -1,15 +1,84 @@
-.layer-container{
+ .header {
+    background-color: #333;
+    color: white;
+    padding: 10px;
+    text-align: center;
+  }
+  
+  .layer-container {
     border: 1px white solid;
     border-radius: 10px;
     width: 40vw;
     margin: 100px auto;
     padding: 20px;
-}
-
-.layer{
+  }
+  
+  .layer {
     border: 1px grey solid;
     margin: 10px;
     padding: 5px;
     text-align: center;
     font-size: 20px;
-}
+  }
+  
+  .input-layer {
+    width: 100%;
+  }
+  
+  .output-layer {
+    border: 1px grey solid;
+  }
+  
+  select,
+  input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    margin: 8px 0;
+    box-sizing: border-box;
+  }
+  
+  .back-button {
+    margin-top: 20px;
+  }
+  
+  select {
+    width: 100%;
+    padding: 8px;
+    margin: 8px 0;
+    box-sizing: border-box;
+  }
+  .add-layer-button {
+    color: white;
+    padding: 10px;
+    margin-top: 10px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  .button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .create-model-button{
+    width: 180px;
+    border: 1px white solid;
+    border-radius: 10px;
+    text-align: center;
+  }
+
+  .insert-training-data-button{
+    width: 180px;
+    border: 1px white solid;
+    border-radius: 10px;
+    text-align: center;
+  }
+
+  .preprocess-data-button {
+    width: 180px;
+    border: 1px white solid;
+    border-radius: 10px;
+    text-align: center;
+  }
