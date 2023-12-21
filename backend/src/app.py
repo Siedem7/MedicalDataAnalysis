@@ -3,7 +3,7 @@ import os
 import pickle
 
 from flask_cors import CORS
-from flask import Flask,  jsonify, request, abort
+from flask import Flask, jsonify, request, abort
 from flask_socketio import SocketIO, send, emit
 
 from sqlalchemy.exc import IntegrityError
@@ -29,23 +29,33 @@ def create_app(database_uri="sqlite:///project.db"):
     db.init_app(app)
     socketio = SocketIO(app)
 
-    app.config["UPLOAD_FOLDER"] =  os.path.join(os.getcwd(), "data_files")
+    app.config["UPLOAD_FOLDER"] = os.path.join(os.getcwd(), "data_files")
     app.config["MODEL_FILES"] = os.path.join(os.getcwd(), "model_files")
 
     CORS(app)
 
-    @app.route("/groups", methods=["GET"]) 
+    # -----------------------------------------------------------------------------
+    # GROUPS
+    # -----------------------------------------------------------------------------
+
+    @app.route("/groups", methods=["GET"])
     def get_groups():
         """ 
-        Get list of groups defined in the system. Only available for logged users.
+        Retrieves list of defined groups.
 
-        Returns
-            200, List of groups. 
-            403, No permission to access this feature. (Not logged in).  
+        Endpoint: GET /groups
+
+        Requires:
+        - Authorization header with a valid token
+
+        Returns:
+        - JSON file with list of groups.
+
+        Error Responses:
+        - 403 Forbidden: If user is not logged in
         """
         token = request.headers.get("Authorization")
         status, result = authorize(token)
-
 
         if status != 200:
             abort(status, description=result)
@@ -53,17 +63,27 @@ def create_app(database_uri="sqlite:///project.db"):
         groups = db.session.execute(db.select(Group)).scalars().all()
         return jsonify({"groups": [group.name for group in groups]})
 
+    # -----------------------------------------------------------------------------
+    # USER MANAGEMENT
+    # -----------------------------------------------------------------------------
+
     @app.route("/users", methods=['GET'])
     def get_users():
         """
-        Get list of users registerd in the system. 
+        Retrieves list of registered users.
 
-        Requires DELETE_USER_ACCOUNT or UPDATE_USER_ACCOUNT
+        Endpoint: GET /users
+
+        Requires:
+        - Authorization header with a valid token
+        - DELETE_USER_ACCOUNT or UPDATE_USER_ACCOUNT permission
 
         Returns:
-            200, List of users.
-            403, No permission to access this feature.
-        """   
+        - JSON file with list of users
+
+        Error Responses:
+        - 403 Forbidden: If user is not logged in or has no permission to access this feature
+        """
         token = request.headers.get("Authorization")
         status, result = authorize(token)
 
@@ -71,7 +91,7 @@ def create_app(database_uri="sqlite:///project.db"):
             abort(403, description=result)
 
         required_permissions = ["DELETE_USER_ACCOUNT", "UPDATE_USER_ACCOUNT"]
-        
+
         user_permissions = result.groups.permissions
         if not any(permission.name in required_permissions for permission in user_permissions):
             abort(403, "No permission to access this feature.")
@@ -81,17 +101,22 @@ def create_app(database_uri="sqlite:///project.db"):
 
     @app.route("/user/<int:user_id>", methods=["GET"])
     def get_user(user_id):
-
         """
-        Get info by id about user registered in the system. 
+        Retrieves info about user.
 
-        Requires DELETE_USER_ACCOUNT or UPDATE_USER_ACCOUNT or CREATE_USER_ACCOUNT
+        Endpoint: GET /user/<user_id>
+
+        Requires:
+        - Authorization header with a valid token
+        - DELETE_USER_ACCOUNT or UPDATE_USER_ACCOUNT or CREATE_USER_ACCOUNT permission
 
         Returns:
-            200, Single user info.
-            403, No permission to access this feature.
-            404, User with that id not found
-        """ 
+        - JSON file with user data
+
+        Error Responses:
+        - 403 Forbidden: If user is not logged in or has no permission to access this feature
+        - 404 No Found: User with provided id not found
+        """
         token = request.headers.get("Authorization")
         status, result = authorize(token)
 
@@ -100,7 +125,7 @@ def create_app(database_uri="sqlite:///project.db"):
 
         required_permissions = ["DELETE_USER_ACCOUNT", "UPDATE_USER_ACCOUNT", "CREATE_USER_ACCOUNT"]
         user_group = db.session().execute(db.select(Group).filter_by(id=result.group)).scalar_one()
-        
+
         try:
             user = db.session.execute(db.select(User).filter_by(id=user_id)).scalar_one()
         except NoResultFound:
@@ -111,77 +136,72 @@ def create_app(database_uri="sqlite:///project.db"):
             abort(403, "No permission to access this feature.")
 
         user_info = {
-            "login" : user.login, 
-            "group" : user.groups.name, 
-            "permissions" : [permission.name for permission in user.groups.permissions]
+            "login": user.login,
+            "group": user.groups.name,
+            "permissions": [permission.name for permission in user.groups.permissions]
         }
         return jsonify(user_info)
 
     @app.route("/login", methods=["POST"])
     def login_user():
         """
-        Logs user to server. Check if user with provided login and password exists, 
-        then returns generated token used for further authorization. 
+        Logs user to server. Check if user with provided login and password exists,
+        then returns generated token used for further authorization.
 
-        Request format: JSON
+        Endpoint: POST /login
+
+        Request Body:
+        {
+            "login": str,    # User login
+            "password": str   # User password
+        }
 
         Returns:
-            200, Token in JSON format. 
-            404, Invalid login or password.
+        - JSON object with token assigned to user
+
+        Error Responses:
+        - 404 No Found: If login or password is invalid
         """
         login = request.json["login"]
         password = request.json["password"]
 
         try:
-            user = db.session.execute(db.select(User).filter_by(login=login, password=hash_password(password))).scalar_one()
+            user = db.session.execute(
+                db.select(User).filter_by(login=login, password=hash_password(password))).scalar_one()
         except NoResultFound:
             abort(404, description="Invalid login or password.")
 
         token = generate_token(user.id)
         return jsonify({"token": token})
 
-    @app.route("/permissions")
-    def get_permissions():
-        """
-        Returns permission for user sending request based on authorization token.
-
-        Request format: JSON
-        
-        Returns:
-            200, Names of user permissions in JSON format. 
-            403, No permission to access this feature. (Not logged in)
-        """
-        token = request.headers.get("Authorization")
-        status, result = authorize(token)
-
-        if status != 200:
-            abort(status, description=result)
-
-        user = result
-        return jsonify({"permissions": [permission.name for permission in user.groups.permissions]})
-
     @app.route("/create_user", methods=["POST"])
     def create_user():
         """
-        Create user in database. Request should have authorization header with token 
-        used to authorize user and following information: 
-            - login - user login
-            - password - user password
-            - group - name of user group
+        Create user in database.
 
-        Requires CREATE_USER_ACCOUNT permission.
+        Endpoint: POST /create_user
+
+        Requires:
+        - Authorization header with a valid token
+        - CREATE_USER_ACCOUNT permission
         
-        Request format: JSON
+        Request Body:
+        {
+            "login": str,    # User login
+            "password": str,   # User password
+            "group": str    # Group name
+        }
         
-        Returns: 
-            200, Successfully created user.
-            400, Missing keys in the request. | Invalid login. | 
-                 Passowrd doesn't meet requirements. | Invalid group name.
-            403, No permission to access this feature.
-            409, User with that login already exists.
+        Returns:
+        - JSON object with text informing of successful user creation
+
+        Error Responses:
+        - 400 Bad Request: If data provided in request body are invalid
+        - 403 Forbidden: If user is not logged in or has no permission to access this feature
+        - 409 Conflict: If login provided in request body is already in use
         """
         token = request.headers.get("Authorization")
-        status, result = authorize_permissions(token,["CREATE_USER_ACCOUNT"])
+        status, result = authorize_permissions(token, ["CREATE_USER_ACCOUNT"])
 
         if status != 200:
             abort(status, description=result)
@@ -198,7 +218,7 @@ def create_app(database_uri="sqlite:///project.db"):
             abort(400, description="Invalid login.")
 
         if not validate_password(password):
-            abort(400, description="Passowrd doesn't meet requirements.")
+            abort(400, description="Password doesn't meet requirements.")
 
         # verify password with policy (length, special characters, etc.)
         try:
@@ -221,18 +241,26 @@ def create_app(database_uri="sqlite:///project.db"):
     @app.route("/delete_user", methods=["DELETE"])
     def delete_user():
         """
-        Delete user in database. Request should have authorization header with token 
-        used to authorize user and user_id (id of user to delete)
-        
-        Requires DELETE_USER_ACCOUNT permission.
+        Delete user in database.
 
-        Request format: JSON
+        Endpoint: DELETE /delete_user
+
+        Requires:
+        - Authorization header with a valid token
+        - DELETE_USER_ACCOUNT permission
+
+        Request Body:
+        {
+            "user_id": int  # User id
+        }
          
-        Returns: 
-            200, Successfully deleted user.
-            400, Missing user_id in the request.
-            403, No permission to access this feature.
-            404, User with that id not found.
+        Returns:
+        - JSON object with text informing of successful user deletion
+
+        Error Responses:
+        - 400 Bad Request: If data provided in request body are invalid
+        - 403 Forbidden: If user is not logged in or has no permission to access this feature
+        - 404 Not Found: If user with that id not found
         """
         token = request.headers.get("Authorization")
         status, result = authorize_permissions(token, ["DELETE_USER_ACCOUNT"])
@@ -258,33 +286,38 @@ def create_app(database_uri="sqlite:///project.db"):
     @app.route("/update_user", methods=["PUT"])
     def update_user():
         """
-        Update user in database. Request should have authorization header with token 
-        used to authorize user, user_id (id of user to update) and at least one of 
-        following information: 
-            - login - new login
-            - password - new password
-            - group - name of new group
+        Update user in database.
 
-        Requires UPDATE_USER_ACCOUNT permission.
+        Endpoint: PUT /update_user
 
-        Request format: JSON
-        
-        Returns: 
-            200, Successfully updated user.
-            400, Missing keys in the request. | Missing user_id in request.| Invalid group name.
-            403, No permission to access this feature.
-            404, User with that id not found.
-            409, Already used login.
+        Requires:
+        - Authorization header with a valid token
+        - UPDATE_USER_ACCOUNT permission
+
+        Request Body:
+        {
+            "user_id": int,  # User id
+            "password": str,   # User password
+            "group": str    # Group name
+        }
+
+        Returns:
+        - JSON object with text informing of successful user update
+
+        Error Responses:
+        - 400 Bad Request: If data provided in request body are invalid
+        - 403 Forbidden: If user is not logged in or has no permission to access this feature
+        - 404 Not Found: If user with that id not found
+        - 409 Conflict: If login provided in request body is already in use
         """
         token = request.headers.get("Authorization")
         status, result = authorize_permissions(token, ["UPDATE_USER_ACCOUNT"])
-        
+
         if status != 200:
             abort(status, description=result)
 
-        if not "user_id" in request.json.keys():
+        if "user_id" not in request.json.keys():
             abort(400, "Missing user_id in request.")
-
 
         expected_keys = ["login", "password", "group"]
         if not any(key in request.json.keys() for key in expected_keys):
@@ -317,31 +350,70 @@ def create_app(database_uri="sqlite:///project.db"):
 
         if "password" in request.json:
             password = request.json["password"]
-            
+
             user.password = hash_password(password)
-            user.password_expire_date=datetime.utcnow() + timedelta(days=30)
+            user.password_expire_date = datetime.utcnow() + timedelta(days=30)
 
         db.session.commit()
         return jsonify("Successfully updated user.")
 
+    # -----------------------------------------------------------------------------
+    # PERMISSIONS
+    # -----------------------------------------------------------------------------
+
+    @app.route("/permissions", methods=["GET"])
+    def get_permissions():
+        """
+        Retrieves list of permissions.
+
+        Endpoint: GET /permissions
+
+        Requires:
+        - Authorization header with a valid token
+
+        Returns:
+        - JSON file with list of permissions
+
+        Error Responses:
+        - 403 Forbidden: If user is not logged in
+        """
+        token = request.headers.get("Authorization")
+        status, result = authorize(token)
+
+        if status != 200:
+            abort(status, description=result)
+
+        user = result
+        return jsonify({"permissions": [permission.name for permission in user.groups.permissions]})
+
+    # -----------------------------------------------------------------------------
+    # FILE SYSTEM
+    # -----------------------------------------------------------------------------
+
     @app.route("/upload_file", methods=["POST"])
     def upload_file():
         """
-        Upload csv file containing data to system. Path with additional 
-        infromations (description, upload data and owner) are also stored 
-        in database. Request should have authorization header with token 
-        used to authorize user and form-data body containing "csv_file" 
-        and "description".
+        Upload csv file containing data to system. Path with description,
+        upload data and owner are also stored in database.
 
-        Requires MANAGE_FILE permission.
+        Endpoint: POST /upload_file
 
-        Request format: form-data
-        
-        Returns: 
-            200, File uploaded succesfully
-            400, Missing csv_file in request.
-            403, No permission to access this feature. | Missing description in request.
-            409, File with that name already exists on the server.
+        Requires:
+        - Authorization header with a valid token
+        - MANAGE_FILE permission
+
+        Request Body:
+        - Form Data:
+            - csv_file: File (CSV file to be uploaded)
+            - description: str (Description for the uploaded file)
+
+        Returns:
+        - JSON object with text informing of file upload
+
+        Error Responses:
+        - 400 Bad Request: If data provided in request body are invalid
+        - 403 Forbidden: If user is not logged in or has no permission to access this feature
+        - 409 Conflict: If file name provided in request body is already in use
         """
         token = request.headers.get("Authorization")
         status, result = authorize_permissions(token, ["MANAGE_FILE"])
@@ -349,7 +421,7 @@ def create_app(database_uri="sqlite:///project.db"):
         if status != 200:
             abort(status, description=result)
 
-        print( request.files.keys())
+        print(request.files.keys())
         if "csv_file" not in request.files.keys():
             abort(400, "Missing csv_file in request.")
 
@@ -360,8 +432,8 @@ def create_app(database_uri="sqlite:///project.db"):
 
         new_file = request.files["csv_file"]
         file_path = os.path.join(
-            app.config["UPLOAD_FOLDER"], 
-            secure_filename(date_uploaded.strftime("%B %d %Y %H %M") + "_" + new_file.filename) 
+            app.config["UPLOAD_FOLDER"],
+            secure_filename(date_uploaded.strftime("%B %d %Y %H %M") + "_" + new_file.filename)
         )
 
         if os.path.exists(file_path):
@@ -378,18 +450,24 @@ def create_app(database_uri="sqlite:///project.db"):
         db.session.add(database_file)
         db.session.commit()
 
-        return jsonify("File uploaded succesfully")
-    
+        return jsonify("File uploaded successfully")
+
     @app.route("/get_datasets", methods=["GET"])
     def get_datasets():
         """
-        Get list of datasets available in the system.
+        Retrieves list of datasets.
 
-        Requires MANAGE_FILE permission.
+        Endpoint: GET /get_datasets
+
+        Requires:
+        - Authorization header with a valid token
+        - MANAGE_FILE permission
 
         Returns:
-            200, List of users.
-            403, No permission to access this feature.
+        - JSON file with list of datasets
+
+        Error Responses:
+        - 403 Forbidden: If user is not logged in or has no permission to access this feature
         """
         token = request.headers.get("Authorization")
         status, result = authorize_permissions(token, ["MANAGE_FILE"])
@@ -397,12 +475,11 @@ def create_app(database_uri="sqlite:///project.db"):
         if status != 200:
             abort(status, result)
 
-        
         files = db.session.execute(db.select(File)).scalars().all()
-        
+
         datasets = list()
         for file in files:
-            file_id = file.id      
+            file_id = file.id
             file_path = file.path
             file_description = file.description
             file_name = os.path.splitext(os.path.basename(file.path))[0]
@@ -411,31 +488,73 @@ def create_app(database_uri="sqlite:///project.db"):
                 csvreader = csv.reader(file)
                 file_header = next(csvreader)
 
-            datasets.append({"file_id": file_id, "file_name": file_name, "desc": file_description, "columns": file_header})
-        
+            datasets.append(
+                {"file_id": file_id, "file_name": file_name, "desc": file_description, "columns": file_header})
+
         return jsonify(datasets)
 
-    @app.route("/create_model", methods=['POST']) 
+    # -----------------------------------------------------------------------------
+    # PREDICTION
+    # -----------------------------------------------------------------------------
+
+    @app.route("/input_structure/<model_id>", methods=["GET"])
+    def get_input_structure(model_id):
+        """
+        Receives dictionary representing data structure, needed to properly
+        upload data to predict.
+
+        Endpoint: GET /input_structure/<model_id>
+
+        Requires:
+        - Authorization header with a valid token
+        - USE_MODEL permission
+
+        Returns:
+        - JSON file with list of users
+
+        Error Responses:
+        - 403 Forbidden: If user is not logged in or has no permission to access this feature
+
+        """
+        token = request.headers.get("Authorization")
+        status, result = authorize_permissions(token, ["USE_MODEL"])
+
+        if status != 200:
+            abort(status, result)
+
+        model_database = db.session.execute(db.select(PredictionModel).filter_by(id=model_id)).scalar_one()
+
+        with open(model_database.configuration, 'rb') as file:
+            model = pickle.load(file)
+
+        return jsonify(model.data.get_data_structure())
+
+    # -----------------------------------------------------------------------------
+    # AI MODEL MANAGEMENT
+    # -----------------------------------------------------------------------------
+
+    @app.route("/create_model", methods=['POST'])
     def create_model():
         """
         Creates model based on request. Model is then saved on local disk in 
-        order to reuse it.  Request should have authorization header with 
-        token used to authorize user and JSON body containing:
+        order to reuse it.
+
+        Request body should contain:
             - file_id: used to crated dataset,
             - model_name: name of model,
             - model_desc: description of model,
             - training_percent: (0-1) float value, indicating division 
                  between training and test sets,
-            - categorical_columns: list of column names that shoud be converted to dummies,
+            - categorical_columns: list of column names that should be converted to dummies,
             - numerical_columns: list of column names that should be normalized with min max values,
             - output_column: name of coulmn considered as output values,
             - epochs: number of iteration of learning process
-            - batch_size: size of batch processed at time in learing process
+            - batch_size: size of batch processed at time in learning process
             - layers: list of layers.
 
             Layer structure:
             First layer consist of "output" and creates linear function by default. This 
-            behaviour cannot be changed. Each layer (different then first) within the 
+            behaviour cannot be changed. Each layer (different from first) within the
             "layers" array consists of the following attributes:
 
                 "function" (required): Specifies the activation function or layer type to be used.
@@ -446,17 +565,20 @@ def create_app(database_uri="sqlite:///project.db"):
                     "Linear": Represents a linear layer.
             
                 "input" (required for "Linear" layers): Specifies the number of input units for the layer.
-
                 "output" (required for "Linear" layers): Specifies the number of output units for the layer.    
 
-        Requires CREATE_MODEL permission.
+        Endpoint: POST /create_model
 
-        Request format: JSON
-        
-        Returns: 
-            200, Successfully created model.
-            400, Missing keys in the request. | Invalid values.
-            403, No permission to access this feature.
+        Requires:
+        - Authorization header with a valid token
+        - CREATE_MODEL permission
+
+        Returns:
+        - JSON object with text informing of model creation
+
+        Error Responses:
+        - 400 Bad Request: If data provided in request body are invalid
+        - 403 Forbidden: If user is not logged in or has no permission to access this feature
         """
         token = request.headers.get("Authorization")
         status, result = authorize_permissions(token, ["CREATE_MODEL"])
@@ -470,7 +592,7 @@ def create_app(database_uri="sqlite:///project.db"):
         data_instance = data_set(name=file_name, description=file.description)
         data_instance.load_data(file_path=file_path)
 
-        numerical_columns =  request.json["numerical_columns"]
+        numerical_columns = request.json["numerical_columns"]
         categorical_columns = request.json["categorical_columns"]
         output_column = request.json["output_column"]
         epochs = request.json["epochs"]
@@ -483,19 +605,19 @@ def create_app(database_uri="sqlite:///project.db"):
         )
 
         model_name = request.json["model_name"]
-        model_descritpion = request.json["model_desc"]
+        model_description = request.json["model_desc"]
         training_percent = request.json["training_percent"]
         layers = request.json["layers"]
-        
-        model = AI_model(name=model_name, description=model_descritpion)
+
+        model = AI_model(name=model_name, description=model_description)
         model.set_structure(data_instance, layers=layers)
         model.create_model(epochs, batch_size, training_percent, socketio)
-    
+
         socketio.send(str(model.model))
 
-        file_path = os.path.join( 
-            app.config["MODEL_FILES"], 
-            secure_filename(model.name + ".pkl") 
+        file_path = os.path.join(
+            app.config["MODEL_FILES"],
+            secure_filename(model.name + ".pkl")
         )
 
         # Store the object to a file
@@ -508,37 +630,10 @@ def create_app(database_uri="sqlite:///project.db"):
         model_database.user = result.id
         model_database.description = model.description
         model_database.name = model.name
-        
+
         db.session.add(model_database)
         db.session.commit()
-        return jsonify("Succesfully crated model.")
-    
-
-    @app.route("/input_structure/<model_id>", methods=["GET"])
-    def get_input_structure(model_id):
-        """
-        Get dictionary representing data structure, needed to properly
-        upload data to predict. 
-
-        Requires USE_MODEL permission.
-
-        Returns:
-            200, List of users.
-            403, No permission to access this feature.
-        
-        """
-        token = request.headers.get("Authorization")
-        status, result = authorize_permissions(token, ["USE_MODEL"])
-
-        if (status != 200):
-            abort(status, result)
-
-        model_database = db.session.execute(db.select(PredictionModel).filter_by(id=model_id)).scalar_one()
-
-        with open(model_database.configuration, 'rb') as file:
-            model = pickle.load(file)
-
-        return jsonify(model.data.get_data_structure())
+        return jsonify("Successfully created model.")
 
     return app, socketio
 
@@ -553,12 +648,9 @@ if __name__ == "__main__":
     if not os.path.exists("model_files"):
         os.mkdir("model_files")
 
-
     with app.app_context():
         db.create_all()
 
         if not isInitialized:
             initialize_database()
     socketio.run(app)
-    #app.run()
-    
