@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { getAvailableDatasets, logout, DataSet } from "../Utils/ApiUtils";
-import { Link } from "react-router-dom";
-
+import React, { useState, useEffect } from "react"
+import { getAvailableDatasets, logout, DataSet } from "../Utils/ApiUtils"
+import { Link } from "react-router-dom"
+import  NewLayer  from "./NewLayer"
+ 
 import "./CreateModel.css";
 
 /**
  * Represents an interface for a layer.
  * @interface
  */
-interface Layer {
+export interface Layer {
   /**
    * Function type of the layer. One of Linear, Sigmoid, Tanh, ReLU
    * @type {string}
@@ -41,70 +42,120 @@ export default function CreateModel() {
   let categoricalColumns =  Array<String>()
   let outputColumn: String = ""
 
-  const [layers, setLayers] = useState([
-    { function: "Tanh", input: null, output: null },
-    { function: "Linear", input: 10, output: 15 },
-    { function: "Linear", input: 15, output: 20 },
-    { function: "Linear", input: 20, output: 10 },
-    { function: "ReLU", input: null, output: null },
-    { function: "Linear", input: 10, output: 1 },
-  ]);
+  let batchSize: Number = 0;
+  let epochsAmount: Number = 0
+  let trainingPercent: Number = 0
+
+  let description: String = ""
+  let modelName: String = ""
+
+  const [layers, setLayers] = useState<Array<Layer>>([]);
 
   const [firstLayerOutput, setFirstLayerOutput] = useState(10)
   const [datasets, setDatasets] = useState<Array<DataSet>>([]);
   const [selectedDataset, setSelectedDataset] = useState<DataSet>()
   const [isSelectedDataset, setIsSelectedDataset] = useState(false)
+  const [isPopupOpen, setIsPopupOpen] = useState(false)
+
+  const openPopup = () => {
+    let inputSize = 0
+    if (layers.length === 0) {
+      inputSize = firstLayerOutput
+    }
+    else {
+      for (var i = layers.length - 1; i >= 0; i--) {
+        if (layers[i].output !== null) {
+          inputSize = layers[i].output!
+          break
+        }
+      }
+      inputSize = inputSize === 0 ? firstLayerOutput : inputSize 
+    }
+    
+    return <NewLayer setOpenPopup={setIsPopupOpen} layers={layers} setLayers={setLayers} inputSize={inputSize}/>
+  }
 
   useEffect(() => {
     getAvailableDatasets(token, setDatasets);
   }, []);
-  const addLayer = () => {
-    setLayers( [
-      { function: "NewLayer", input: null, output: null },
-    ]);
-  };
 
   return (
     <>
       <div className="header">
-        <h1>Create model</h1>
+        <h1>Create Model</h1>
         <button onClick={logout}>log out</button>
       </div>
       {isSelectedDataset ? (
         <div>
-          <div className="layer-container">
-            <div className="layer input-layer">
-              <label htmlFor="first-layer-input">Output:</label>
-              <input
-                type="text"
-                name="first-layer-input"
-                id="first-layer-input"
-              />
+          <div className="model-config">
+            <div className="column left-column">
+              <label htmlFor="model-name">Insert model name: </label>
+              <input type="text" id="model-name" name="model-name"/>
+              <label htmlFor="description">Insert model description: </label>
+              <textarea name="description" id="description" cols={30} rows={5}></textarea>
             </div>
 
-            {layers.map((layer: Layer) => (
-              <div className="layer" key={layer.function}>
-                {layer.input === null ? (
-                  layer.function
-                ) : (
-                  <div>
-                    {layer.function} Input: {layer.input} Output: {layer.output}
-                  </div>
-                )}
+            <div className="layer-container column">
+              <div className="layer input-layer">
+                <label htmlFor="first-layer-input">Output:</label>
+                <input
+                  type="number"
+                  name="first-layer-input"
+                  id="first-layer-input"
+                  onChange={(event) => setFirstLayerOutput(Number.parseInt(event.target.value))}
+                  value={firstLayerOutput}
+                />
               </div>
-            ))}
 
-            <div className="layer output-layer">Sigmoid</div>
+              {layers.map((layer: Layer) => (
+                <div className="layer" key={layer.function}>
+                  {layer.input === null ? (
+                    layer.function
+                  ) : (
+                    <div>
+                      {layer.function} Input: {layer.input} Output: {layer.output}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              <div className="layer output-layer">Sigmoid</div>
+            </div>
+
+            <div className="column right-column">
+              <div>
+                <label htmlFor="batch-size">Insert batch size: </label>
+                <input type="number" name="batch-size" id="batch-size" />
+              </div>
+              <div>
+                <label htmlFor="epochs-number">Insert number of epochs: </label>
+                <input type="number" name="epochs-number" id="epochs-number" />
+              </div>
+              <div>
+                <label htmlFor="training-percent">Insert training percent: </label>
+                <input type="number" name="training-percent" id="training-percent" />
+              </div>
+            </div>
           </div>
+          
           <div>
             <button>Check</button>
           </div>
           <button onClick={()=>{setIsSelectedDataset(false)}}>
             Change Dataset
           </button>
-          <button className="add-layer-button" onClick={addLayer}>
-            Add Layer
+          <button className="add-layer-button" onClick={()=>{
+            if(firstLayerOutput > 0){
+              setIsPopupOpen(true)
+            }
+            else{
+              alert("Wrong output value.")
+            }
+
+            }}>
+            Add New Layer 
           </button>
+          {isPopupOpen? openPopup() : null}
         </div>
       ) : (
         <div>
@@ -148,8 +199,7 @@ export default function CreateModel() {
             <button onClick={() => {
               const validate = () => {
                   let isOutputValid = false;
-                  selectedDataset.columns.map((element) => {
-                  
+                  selectedDataset.columns.forEach((element) => {
                   let selectedType = document.getElementById(element + "_column") as HTMLSelectElement
                   switch (selectedType.value) {
                     case "categorical_columns": 
@@ -182,12 +232,7 @@ export default function CreateModel() {
       )}
       <div className="back-button">
         <Link to="/">Back</Link>
-        </div>
-        <div className="create-model-button">Create Model</div>
-        <div className="insert-training-data-button">
-          Insert Training Data (File Dialog)
-        </div>
-        <div className="preprocess-data-button">Preprocess Data</div>
+      </div>
       </>
   );
   

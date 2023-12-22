@@ -1,3 +1,6 @@
+import { Dispatch, SetStateAction } from "react";
+
+
 /**
  * Represents a data set with information about a file.
  * @interface DataSet
@@ -27,8 +30,6 @@ export interface DataSet {
    */
   columns: string[];
 }
-
-
 
 export function loginForm(login: string, password: string) {
   var myHeaders = new Headers();
@@ -121,9 +122,7 @@ export async function getGroups(token: string): Promise<string[]> {
     });
 }
 
-export async function getUsers(
-  token: string
-): Promise<{ id: Number; login: String }[]> {
+export async function getUsers(token: string): Promise<{ id: Number; login: String }[]> {
   var myHeaders = new Headers();
   myHeaders.append("Authorization", "Bearer " + token);
 
@@ -282,7 +281,7 @@ export function updateUser(
     });
 }
 
-export function getAvailableDatasets(token: String, setDataSet: React.Dispatch<React.SetStateAction<DataSet[]>>) {
+export function getAvailableDatasets(token: String, setDataSet: Dispatch<SetStateAction<DataSet[]>>) {
   var myHeaders = new Headers();
   myHeaders.append("Authorization", "Bearer " + token);
 
