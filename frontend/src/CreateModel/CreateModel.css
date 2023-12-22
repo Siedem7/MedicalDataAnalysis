@@ -1,6 +1,4 @@
  .header {
-    background-color: #333;
-    color: white;
     padding: 10px;
     text-align: center;
   }
@@ -37,9 +35,6 @@
     box-sizing: border-box;
   }
   
-  .back-button {
-    margin-top: 20px;
-  }
   
   select {
     width: 100%;
@@ -58,27 +53,23 @@
   }
   .button-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: center; 
     margin-top: 20px;
   }
   
-  .create-model-button{
-    width: 180px;
-    border: 1px white solid;
-    border-radius: 10px;
-    text-align: center;
+  .back-button {
+    margin-top: auto;
+    margin-bottom: auto;
   }
-
-  .insert-training-data-button{
-    width: 180px;
-    border: 1px white solid;
-    border-radius: 10px;
-    text-align: center;
-  }
-
+  
+  .create-model-button,
+  .insert-training-data-button,
   .preprocess-data-button {
     width: 180px;
     border: 1px white solid;
     border-radius: 10px;
     text-align: center;
+    margin: 0 100px; 
+    margin-left: auto;
+    margin-right: auto;
   }

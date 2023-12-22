@@ -14,7 +14,7 @@
   }
   
   textarea {
-    width: 100%;
+    width: 50%;
     margin-bottom: 10px;
     padding: 8px;
     box-sizing: border-box;
@@ -28,11 +28,12 @@
     width: 60px;
     border: white solid 1px;
     text-align: center;
-    margin: auto;
+    margin-top: auto;
+    margin-bottom: auto;
   }
   
   a {
-    width: 100%;
+    width: 50%;
     color:white;
     text-decoration: none;
   }
