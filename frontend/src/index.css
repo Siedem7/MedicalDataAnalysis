@@ -3,7 +3,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  color: #ffffff;
+  color: #ebebeb;
   background-color: #1a1919;
   font-family: 'Courier New';
 }
@@ -12,3 +12,48 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+input, textarea, select{
+  background-color: #1b1b1b;
+  color: #ebebeb;
+  border-radius: 10px;
+  border: 1px solid #ebebeb;
+  padding: 5px;
+  font-family: inherit;
+  font-size: 16px;
+}
+
+select{
+  padding: 2px;
+}
+
+button{
+  background-color: #1b1b1b;
+  color: #ebebeb;
+  border-radius: 10px;
+  border: 1px solid #ebebeb;
+  padding: 10px;
+  font-family: 'Courier New';
+  font-size: 18px;
+}
+
+button:hover{
+  cursor: pointer;
+  background-color: #2a2a2a;
+}
+
+.back-button{
+  background-color: #1b1b1b;
+  color: #ebebeb;
+  border-radius: 10px;
+  border: 1px solid #ebebeb;
+  padding: 10px;
+  font-family: 'Courier New';
+  font-size: 18px;
+}
+
+.back-button:hover{
+  cursor: pointer;
+  background-color: #2a2a2a;
+}
+
