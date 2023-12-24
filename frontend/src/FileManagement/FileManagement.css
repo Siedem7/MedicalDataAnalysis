@@ -5,25 +5,37 @@
 }
 
 .file-input {
-  margin: 20px;
-  padding: 15px;
-  border: white solid 1px;
-  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-content: flex-start;
+
+  width: 20%;
+  margin: 50px auto;
 }
 
 input[type="file"] {
-  margin-bottom: 10px;
+  margin: 10px 0;
+  border: none;
+  padding: 10px;
+  background-color: #1a1919;
+  color: #fff; 
+  border-radius: 5px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
 }
 
-.back-button {
-  width: 60px;
-  border: white solid 1px;
+.file-input input[type="file"]:hover {
+  background-color: #333;
+
+}
+
+.file-input input[type="file"]:focus {
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+  background-color: #444;
+}
+
+.save-file-button-container{
   text-align: center;
-  margin: auto;
+  margin-bottom: 50px;
 }
 
-a {
-  width: 100%;
-  color:white;
-  text-decoration: none;
-}

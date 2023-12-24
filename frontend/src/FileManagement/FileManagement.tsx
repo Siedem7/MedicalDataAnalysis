@@ -12,10 +12,14 @@ export default function FileManagement() {
     let token = localStorage.getItem("token") as string;
     let fileInput = document.getElementById("file") as HTMLInputElement;
 
-    if (fileInput === null || fileInput.files === null) {
-      return;
+    if (fileInput === null ||
+        fileInput.files === null || 
+        description === "" ||
+        fileInput.files[0] === undefined) {
+      alert("Invalid input.")
+      return
     }
-
+    
     var myHeaders = new Headers();
     myHeaders.append("Authorization", "Bearer " + token);
 
@@ -84,7 +88,7 @@ export default function FileManagement() {
         />
       </div>
 
-      <div>
+      <div className="save-file-button-container">
         <button onClick={uploadFile}>Save file</button>
       </div>
 

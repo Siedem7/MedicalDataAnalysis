@@ -258,38 +258,48 @@ export default function CreateModel() {
             </div>
           </div>
 
-          <button
-            onClick={() => {
-              setIsSelectedDataset(false);
-            }}
-          >
-            Change Dataset
-          </button>
+          <div className="create-model-buttons-container">
+            <div className="change-dataset-button"> 
+              <button
+                onClick={() => {
+                  setIsSelectedDataset(false);
+                }}
+              >
+                Change Dataset
+              </button>
+            </div>
 
-          <button
-            onClick={() => {
-              const updatedLayers = [...layers]
-              updatedLayers.pop()
-              setLayers(updatedLayers)
-          }}>Remove Last Layer</button>
+            <div className="layer-manipulation-buttons">
+              <button
+                onClick={() => {
+                  const updatedLayers = [...layers]
+                  updatedLayers.pop()
+                  setLayers(updatedLayers)
+                }}>Remove Last Layer</button>
 
-          <button
-            className="add-layer-button"
-            onClick={() => {
-              if (firstLayerOutput > 0) {
-                setIsPopupOpen(true);
-              } else {
-                alert("Wrong output value.");
-              }
-            }}
-          >
-            Add New Layer
-          </button>
+                <button
+                className="add-layer-button"
+                onClick={() => {
+                  if (firstLayerOutput > 0) {
+                    setIsPopupOpen(true);
+                  } else {
+                    alert("Wrong output value.");
+                  }
+                }}
+                >
+                Add New Layer
+              </button>
+            </div>
 
+            
+
+            <div className="save-button">
+              <button onClick={createModel}>
+                Save model
+              </button>
+            </div>
+          </div>
           {isPopupOpen ? openPopup() : null}
-          <button onClick={createModel}>
-            Save model
-          </button>
         </div>
       ) : (
         <div className="select-dataset-container">

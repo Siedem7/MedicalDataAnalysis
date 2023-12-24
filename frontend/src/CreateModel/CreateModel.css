@@ -165,3 +165,17 @@
     margin: 0;
     padding: 0;
 }
+
+.create-model-buttons-container{
+    display:flex;
+    justify-content: space-between;
+    margin-bottom: 50px;
+}
+
+.change-dataset-button, .layer-manipulation-buttons, .save-button{
+    margin: auto;
+}
+
+.add-layer-button{
+    margin-left: 20px
+}
