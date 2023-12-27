@@ -404,7 +404,9 @@ export default function CreateModel() {
         </div>
       )}
       <div className="back-button">
-        <Link to="/">Back</Link>
+        <Link to="/">
+          <button>Back</button>
+        </Link>
       </div>
     </>
   );

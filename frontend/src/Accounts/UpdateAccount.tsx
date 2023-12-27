@@ -89,7 +89,7 @@ export default function UpdateAccount() {
 
       <div className="back-button">
         <Link to="/" >
-          Back
+         <button>Back</button>
         </Link>
       </div>
     </>

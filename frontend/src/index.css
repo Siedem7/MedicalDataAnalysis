@@ -43,17 +43,7 @@ button:hover{
 }
 
 .back-button{
-  background-color: #1b1b1b;
-  color: #ebebeb;
-  border-radius: 10px;
-  border: 1px solid #ebebeb;
-  padding: 10px;
-  font-family: 'Courier New';
-  font-size: 18px;
-}
-
-.back-button:hover{
-  cursor: pointer;
-  background-color: #2a2a2a;
+  width: 70px;
+  margin: 0 auto;
 }
 

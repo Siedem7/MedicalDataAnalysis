@@ -93,7 +93,9 @@ export default function FileManagement() {
       </div>
 
       <div className="back-button">
-        <Link to="/">Back</Link>
+        <Link to="/">
+          <button>Back</button>
+        </Link>
       </div>
     </>
   );

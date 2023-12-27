@@ -51,8 +51,8 @@ a {
 .grid-2 {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr;
-    width:700px;
-    height:350px;
+    width:600px;
+    height:300px;
 }
 
 .grid-3 {

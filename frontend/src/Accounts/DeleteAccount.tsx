@@ -31,7 +31,7 @@ export default function DeleteAccount() {
         <button onClick={logout}>log out</button>
       </div>
 
-      <div className="choose-user-container">
+      <div className="delete-user-container">
         <p>Choose user:</p>
         <select name="userSelection" id="userSelection" onChange={(ev) => idToDelete = parseInt(ev.target.value)}>
          <option disabled selected hidden> Select User </option>
@@ -54,7 +54,7 @@ export default function DeleteAccount() {
 
       <div className="back-button">
         <Link to="/" >
-          Back
+            <button>Back</button>
         </Link>
       </div>
     </>

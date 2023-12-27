@@ -31,6 +31,40 @@ export interface DataSet {
   columns: string[];
 }
 
+export interface InputStrucure {
+  categorical_columns: Array<{
+    name: string;
+    values: Array<string>;
+  }>
+
+  numerical_columns: Array<{
+    name: string;
+    min: number;
+    max: number;
+    mean: number;
+    median: number;
+  }>
+
+  output_column: String
+}
+/**
+ * Represets a model with basic information about model id and name
+ * @interface PredictionModel
+ */
+export interface PredictionModel {
+  /**
+   * The unique identifier for the model.
+   * @type {number}
+   */
+  id: number;
+
+  /**
+   * The name of the model
+   * @type {string}
+   */
+  name: string;
+}
+
 export function loginForm(login: string, password: string) {
   var myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
@@ -294,4 +328,34 @@ export function getAvailableDatasets(token: String, setDataSet: Dispatch<SetStat
     .then((response) => response.json())
     .then((result) => setDataSet(result))
     .catch((error) => console.log("error", error));
+}
+
+export function getAvailableModels(token: String, setModels: Dispatch<SetStateAction<PredictionModel[]>>) {
+  var myHeaders = new Headers();
+  myHeaders.append("Authorization", "Bearer " + token);
+  
+  var requestOptions = {
+    method: 'GET',
+    headers: myHeaders
+  };
+  
+  fetch("http://127.0.0.1:5000/models", {...requestOptions, redirect: "follow"})
+    .then(response => response.json())
+    .then(result => setModels(result))
+    .catch(error => console.log('error', error));
+} 
+
+export function getInputStructure(token: String, setStrucure: Dispatch<SetStateAction<InputStrucure>>) {
+  var myHeaders = new Headers();
+  myHeaders.append("Authorization", "Bearer " + token);
+  
+  var requestOptions = {
+    method: 'GET',
+    headers: myHeaders,
+  };
+  
+  fetch("http://127.0.0.1:5000/input_structure/1", {...requestOptions, redirect: "follow"})
+    .then(response => response.json())
+    .then(result => setStrucure(result))
+    .catch(error => console.log('error', error));
 }

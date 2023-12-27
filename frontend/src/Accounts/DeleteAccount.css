@@ -19,20 +19,12 @@
 .delete-form{
     width: 500px;
     height: 10px;
-    margin: 100px auto;
+    margin: auto;
 }
 
 .delete-form input{
     width: 10%;
     margin-bottom: 10px;
-}
-
-
-.back-button{
-    width: 60px;
-    border: white solid 1px;
-    text-align: center;
-    margin: auto;
 }
 
 a{
@@ -42,6 +34,17 @@ a{
 }
 
 .delete-button{
-    width: 105px;
-    margin: 20px auto;
+    width: 150px;
+    margin: 25px auto 50px auto;
+}
+
+.delete-user-container{
+    width: 300px;
+    margin: 150px auto 20px auto;
+}
+
+.delete-user-container p{
+    display: inline;
+    margin-right: 20px;
+    font-size: 20pxz;
 }

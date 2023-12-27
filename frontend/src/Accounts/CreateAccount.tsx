@@ -66,7 +66,7 @@ export default function CreateAccount() {
 
         <div className="back-button">
           <Link to="/" >
-            Back
+            <button>Back</button>
           </Link>
         </div>
 
