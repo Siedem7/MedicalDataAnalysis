@@ -635,6 +635,18 @@ def create_app(database_uri="sqlite:///project.db"):
         db.session.commit()
         return jsonify("Successfully created model.")
 
+    @app.route("/models", methods=["GET"])
+    def get_models():
+        token = request.headers.get("Authorization")
+        status, result = authorize(token)
+
+        if status != 200:
+            abort(status, description=result)
+
+        models = db.session.execute(db.select(PredictionModel)).scalars().all()
+        return jsonify([{"name": model.name, "id": model.id} for model in models])
+
+
     return app, socketio
 
 

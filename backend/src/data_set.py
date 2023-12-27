@@ -50,12 +50,18 @@ class data_set():
         data_structure['numerical_columns'] = numercial_columns_list
         data_structure['output_column'] = output_column
         
-        original_columns = self.data.columns.tolist();
+        #original_columns = self.data.columns.tolist()
+
+        for column  in categorical_columns:
+            column_values = list(set(self.data[column].tolist()))
+            data_structure['categorical_columns'].append({'name': column, 'values': column_values})
+
+    
         self.data = pd.get_dummies(self.data, columns=categorical_columns)
         output_column = self.data.pop(data_structure['output_column'])
         self.data.insert(len(self.data.columns), output_column.name, output_column)
 
-        data_structure['categorical_columns'] = [col for col in self.data.columns.tolist() if col not in original_columns]
+        #data_structure['categorical_columns'] = [col for col in self.data.columns.tolist() if col not in original_columns]
 
         for column in data_structure['numerical_columns']:
             column['min'] = float(self.data[column['name']].min())
