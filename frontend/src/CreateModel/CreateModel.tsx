@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { getAvailableDatasets, logout, DataSet } from "../Utils/ApiUtils";
-import { Link } from "react-router-dom";
-import NewLayer from "./NewLayer";
+import React, { useState, useEffect } from "react"
+import { getAvailableDatasets, logout, DataSet } from "../Utils/ApiUtils"
+import { Link } from "react-router-dom"
+import NewLayer from "./NewLayer"
+import TrainingProgress from "./TrainingProgress"
 
-import "./CreateModel.css";
+
+import "./CreateModel.css"
 
 /**
  * Represents an interface for a layer.
@@ -36,25 +38,26 @@ export interface Layer {
  */
 export default function CreateModel() {
   // Retrieve the user token from local storage
-  let token = localStorage.getItem("token") as string;
+  let token = localStorage.getItem("token") as string
 
   const [numericalColumns, setNumericalColumns] = useState<Array<String>>()
   const [categoricalColumns, setCategoricalColumns] = useState<Array<String>>()
   const [outputColumn, setOutputColumn] = useState<String>()
 
-  const [batchSize, setBatchSize] = useState(50);
-  const [epochsAmount, setEpochsAmount] = useState(50);
-  const [trainingPercent, setTrainingPercent] = useState(90);
-  const [description, setDescription] = useState("");
-  const [modelName, setModelName] = useState("");
+  const [batchSize, setBatchSize] = useState(50)
+  const [epochsAmount, setEpochsAmount] = useState(50)
+  const [trainingPercent, setTrainingPercent] = useState(90)
+  const [description, setDescription] = useState("")
+  const [modelName, setModelName] = useState("")
 
-  const [layers, setLayers] = useState<Array<Layer>>([]);
+  const [layers, setLayers] = useState<Array<Layer>>([])
 
-  const [firstLayerOutput, setFirstLayerOutput] = useState(10);
-  const [datasets, setDatasets] = useState<Array<DataSet>>([]);
-  const [selectedDataset, setSelectedDataset] = useState<DataSet>();
-  const [isSelectedDataset, setIsSelectedDataset] = useState(false);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [firstLayerOutput, setFirstLayerOutput] = useState(10)
+  const [datasets, setDatasets] = useState<Array<DataSet>>([])
+  const [selectedDataset, setSelectedDataset] = useState<DataSet>()
+  const [isSelectedDataset, setIsSelectedDataset] = useState(false)
+  const [isPopupOpen, setIsPopupOpen] = useState(false)
+  const [isTrainingInProgress, setIsTrainingInProgress] = useState(false)
 
   const openPopup = () => {
     let inputSize = 0;
@@ -84,7 +87,6 @@ export default function CreateModel() {
     if (!checkModel()) {
       return 
     }
-    console.log(numericalColumns)
     var myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
     myHeaders.append("Authorization", "Bearer " + token);
@@ -111,7 +113,9 @@ export default function CreateModel() {
     fetch("http://127.0.0.1:5000/create_model", {...requestOptions, redirect: 'follow'})
       .then(response => response.text())
       .then(result => console.log(result))
-      .catch(error => console.log('error', error));
+      .catch(error => console.log('error', error))
+
+    setIsTrainingInProgress(true)
   }
 
   const checkModel = ():boolean => {
@@ -290,15 +294,18 @@ export default function CreateModel() {
                 Add New Layer
               </button>
             </div>
-
-            
-
             <div className="save-button">
               <button onClick={createModel}>
                 Save model
               </button>
             </div>
           </div>
+          <div className="back-button">
+            <Link to="/">
+              <button>Back</button>
+            </Link>
+          </div>
+          {isTrainingInProgress? <TrainingProgress modelName={modelName} setIsTrainingInProgress={setIsTrainingInProgress}/> :null}
           {isPopupOpen ? openPopup() : null}
         </div>
       ) : (
@@ -401,13 +408,20 @@ export default function CreateModel() {
               </div>
             </>
           ) : null}
+          <div className="create-model-link-buttons">
+            <div className="add-new-dataset-button">
+              <Link to="/files">
+                <button>Add New Dataset</button>
+              </Link>
+            </div>
+            <div className="back-button-create-model">
+              <Link to="/">
+                <button>Back</button>
+              </Link>
+            </div>
+          </div>
         </div>
       )}
-      <div className="back-button">
-        <Link to="/">
-          <button>Back</button>
-        </Link>
-      </div>
     </>
   );
 }

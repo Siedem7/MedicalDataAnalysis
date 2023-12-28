@@ -53,6 +53,7 @@ a {
     grid-template-rows: 1fr;
     width:600px;
     height:300px;
+    margin-top: 200px;
 }
 
 .grid-3 {
@@ -60,6 +61,7 @@ a {
     grid-template-rows: 1fr;
     width: 900px;
     height: 300px;
+    margin-top: 200px;
 }
 
 .grid-4 {

@@ -27,12 +27,13 @@ def create_app(database_uri="sqlite:///project.db"):
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = database_uri
     db.init_app(app)
-    socketio = SocketIO(app)
+    CORS(app,  resources={r"/*": {"origins": "http://localhost:3000"}})
+    socketio = SocketIO(app, cors_allowed_origins="http://localhost:3000") 
 
     app.config["UPLOAD_FOLDER"] = os.path.join(os.getcwd(), "data_files")
     app.config["MODEL_FILES"] = os.path.join(os.getcwd(), "model_files")
 
-    CORS(app)
+    
 
     # -----------------------------------------------------------------------------
     # GROUPS

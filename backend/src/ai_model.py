@@ -103,7 +103,7 @@ class AI_model():
 
             # Calculate accuracy
             accuracy = np.mean(Y_pred_np == Y_test_np)
-            socketio.emit("model_training", f"Accuracy: {accuracy}")
+            socketio.emit(self.name, f"Accuracy: {accuracy}")
 
         self.is_model_trained = True
 
