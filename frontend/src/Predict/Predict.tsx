@@ -21,6 +21,15 @@ export default function Predict() {
       getAvailableModels(token, setModels)
     }, [])
 
+    const transformString = (text:string) =>{
+        const words = text.split("_")
+        const newString = words
+        .map((word:string) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+
+        return newString;
+    }
+
     return (
       <>
         <div className="header">
@@ -31,37 +40,53 @@ export default function Predict() {
         {isSelectedModel ?  
           <>
             <div className='input-data-container'>
-                {inputStructure.categorical_columns.map((column) => 
-                <>
-                    <div className='data-input-row'>
-                        <p>{column.name}</p>
-                        <select name={column.name} id={column.name}>
-                            <option disabled selected hidden> select value </option>
-                            {column.values.map((value) => <option value={value.toString()}>{value}</option>)}
-                        </select>
-                    </div>  
-                </>)}
-                {inputStructure.numerical_columns.map((column)=>
-                <>
-                    <div className='data-input-row'>
-                        <label htmlFor={column.name}>{column.name + ": "}</label>
-                        <input type="number" min={column.min} max={column.max}/>
-                    </div>
-                </>)}
 
+                <div className='categorical-columns-container'>
+                    {inputStructure.categorical_columns.map((column) => 
+                    <>
+                        <div className='data-input-row'>
+                            <label htmlFor={column.name}>{transformString(column.name) + ": "}</label>
+                            <select name={column.name} id={column.name}>
+                                <option disabled selected hidden> select value </option>
+                                {column.values.map((value) => <option value={value.toString()}>{transformString(value)}</option>)}
+                            </select>
+                        </div>      
+                    </>)}
+                </div>
+
+                <div className='numerical-columns-container'>
+                    {inputStructure.numerical_columns.map((column)=>
+                    <>
+                        <div className='data-input-row'>
+                            <label htmlFor={column.name}>{transformString(column.name) + ": "}</label>
+                            <input type="number" min={column.min} max={column.max}/>
+                        </div>
+                    </>)}
+                </div>
+
+            </div>
+
+            <div className='predict-button-container'>
+                <button onClick={()=>{/* send predict */}}>
+                    Predict
+                </button>
             </div>
           </>
           :
           <>
             <div className='select-model-container'>
-                <p>Choose model:</p>
-                <select name="select-model" id="select-model" onChange={(ev) => {
-                    var model = models.find((model) => { return model.id.toString() === ev.target.value })
-                    setSelectedModel(model)
-                }}>
-                <option disabled selected hidden> select model </option>
-                    {models.map((model:PredictionModel) => <option value={model.id.toString()}>{model.name}</option>)}
-                </select>
+                <div className='model-input-row'>
+                    <label htmlFor="select-model">Choose model: </label>
+                    <select name="select-model" id="select-model" onChange={(ev) => {
+                        var model = models.find((model) => { return model.id.toString() === ev.target.value })
+                        setSelectedModel(model)
+                    }}>
+                    <option disabled selected hidden> select model </option>
+                        {models.map((model:PredictionModel) => <option value={model.id.toString()}>{model.name}</option>)}
+                    </select>
+                </div>
+            </div>
+            <div className='save-model-button-container'>
                 <button onClick={() => {
                     if (selectedModel !== undefined){
                         getInputStructure(token, setInputStructure)
@@ -71,7 +96,7 @@ export default function Predict() {
                         alert("Select model first.")
                     }
                 }}>
-                    Select model
+                    Save
                 </button>
             </div>
           </>
