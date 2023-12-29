@@ -24,8 +24,8 @@ def hash_password(password):
     Returns:
         str: hashed password.
     """
-    hashedPassword = hashlib.sha512(password.encode("utf-8")).hexdigest()
-    return hashedPassword
+    hashed_password = hashlib.sha512(password.encode("utf-8")).hexdigest()
+    return hashed_password
 
 
 # Check if password is valid
@@ -123,7 +123,7 @@ def authorize(token):
 
     # Check if token is valid
     if token is None or token[:7] != "Bearer ":
-        return 401, "Invalid token."
+        return 403, "Invalid token."
 
     # Extract user id from token
     user_id = get_id_from_token(token[7:])
@@ -133,7 +133,7 @@ def authorize(token):
         user = db.session.execute(db.select(User).filter_by(id=user_id)).scalar_one()
     except NoResultFound:
         # If user does not exist return 401
-        return 401, "No user with provided token."
+        return 403, "No user with provided token."
     
     # Return user, and ok status
     return 200, user

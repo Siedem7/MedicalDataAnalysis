@@ -1,8 +1,8 @@
 from src.data_set import data_set
+from src.socketio_functions import emit_to_socketio
 import torch as torch
 import torch.nn as nn 
 import numpy as np
-
 
 
 class AI_model():
@@ -60,7 +60,7 @@ class AI_model():
         self.is_model_trained = False
 
     
-    def create_model(self, epochs, batch_size,  training_procent: float, socketio):
+    def create_model(self, epochs, batch_size,  training_procent: float):
         """
         Create model for AI model.
 
@@ -89,7 +89,7 @@ class AI_model():
                 loss = loss_fn(outputs, Y_batch)
                 loss.backward()
                 optimizer.step()
-            socketio.emit("model_training", f'Finished epoch {epoch}, latest loss {loss}')
+            emit_to_socketio(self.name, f'Finished epoch {epoch}, latest loss {loss}')
 
         with torch.no_grad():
             Y_pred = self.model(X_test)
@@ -103,7 +103,7 @@ class AI_model():
 
             # Calculate accuracy
             accuracy = np.mean(Y_pred_np == Y_test_np)
-            socketio.emit("model_training", f"Accuracy: {accuracy}")
+            emit_to_socketio(self.name, f"Accuracy: {accuracy}")
 
         self.is_model_trained = True
 
