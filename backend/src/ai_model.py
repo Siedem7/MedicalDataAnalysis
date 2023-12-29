@@ -89,6 +89,7 @@ class AI_model():
                 loss = loss_fn(outputs, Y_batch)
                 loss.backward()
                 optimizer.step()
+            socketio.emit(self.name, f'Finished epoch {epoch}, latest loss {loss}')
             emit_to_socketio(self.name, f'Finished epoch {epoch}, latest loss {loss}')
 
         with torch.no_grad():

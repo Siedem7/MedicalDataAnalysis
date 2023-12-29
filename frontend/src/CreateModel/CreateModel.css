@@ -8,8 +8,11 @@
     border: 1px white solid;
     border-radius: 10px;
     width: 100%;
+    height: 40vh;
     padding: 20px;
     margin: 0 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .layer {
@@ -178,4 +181,33 @@
 
 .add-layer-button{
     margin-left: 20px
+}
+
+.create-model-link-buttons{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 50px;
+}
+
+.back-button-create-model{
+    width:inherit;
+    margin: 0; 
+}
+
+.add-new-dataset-button{
+    margin-right: 30px;
+}
+
+.training-progress-popup{
+    width: 700px;
+    height: 80vh;
+    left: 32%;
+    top: 9%;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.close-popup-training-progress{
+    margin-top: 20px;
 }
