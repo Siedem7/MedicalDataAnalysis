@@ -345,7 +345,7 @@ export function getAvailableModels(token: String, setModels: Dispatch<SetStateAc
     .catch(error => console.log('error', error));
 } 
 
-export function getInputStructure(token: String, setStrucure: Dispatch<SetStateAction<InputStrucure>>) {
+export function getInputStructure(token: String, setStrucure: Dispatch<SetStateAction<InputStrucure>>, modelID:number) {
   var myHeaders = new Headers();
   myHeaders.append("Authorization", "Bearer " + token);
   
@@ -354,8 +354,9 @@ export function getInputStructure(token: String, setStrucure: Dispatch<SetStateA
     headers: myHeaders,
   };
   
-  fetch("http://127.0.0.1:5000/input_structure/1", {...requestOptions, redirect: "follow"})
+  fetch("http://127.0.0.1:5000/input_structure/" + modelID, {...requestOptions, redirect: "follow"})
     .then(response => response.json())
     .then(result => setStrucure(result))
     .catch(error => console.log('error', error));
 }
+

@@ -180,7 +180,12 @@
 }
 
 .add-layer-button{
-    margin-left: 20px
+    margin: 0 40px 0 20px;
+    width: 210px;
+}
+
+.remove-layer-button{
+    width: 210px;
 }
 
 .create-model-link-buttons{

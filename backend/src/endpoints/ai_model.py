@@ -61,7 +61,7 @@ def create_model():
 
     expected_keys = ["file_id", "numerical_columns", "categorical_columns", "output_column", "epochs", "batch_size",
                      "model_name", "model_desc", "training_percent", "layers", "fill_method"]
-    if not any(key in request.json.keys() for key in expected_keys):
+    if not all(key in request.json.keys() for key in expected_keys):
         abort(400, description="Missing keys in the request.")
 
     file_id = request.json["file_id"]

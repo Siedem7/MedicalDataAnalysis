@@ -40,7 +40,7 @@ def create_app(database_uri="sqlite:///project.db"):
     app.add_url_rule("/upload_file", methods=["POST"], view_func=file.upload_file)
     app.add_url_rule("/get_datasets", methods=["GET"], view_func=file.get_datasets)
     app.add_url_rule("/input_structure/<model_id>", methods=["GET"], view_func=prediction.get_input_structure)
-    app.add_url_rule("/predict/<model_id>", methods=["GET"], view_func=prediction.predict)
+    app.add_url_rule("/predict/<model_id>", methods=["POST"], view_func=prediction.predict)
     app.add_url_rule("/create_model", methods=["POST"], view_func=ai_model.create_model)
     app.add_url_rule("/models", methods=["GET"], view_func=ai_model.get_models)
 

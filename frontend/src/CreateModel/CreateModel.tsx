@@ -48,6 +48,7 @@ export default function CreateModel() {
   const [epochsAmount, setEpochsAmount] = useState(50)
   const [trainingPercent, setTrainingPercent] = useState(90)
   const [description, setDescription] = useState("")
+  const [fillMethod, setFillMethod] = useState("mean")
   const [modelName, setModelName] = useState("")
 
   const [layers, setLayers] = useState<Array<Layer>>([])
@@ -101,7 +102,8 @@ export default function CreateModel() {
       "output_column": outputColumn,
       "layers": Array<any>().concat([{"output": firstLayerOutput}]).concat(layers).concat({"function": "Sigmoid"}),
       "epochs": epochsAmount,
-      "batch_size": batchSize
+      "batch_size": batchSize,
+      "fill_method": fillMethod
     });
     
     var requestOptions = {
@@ -259,6 +261,13 @@ export default function CreateModel() {
                   value={trainingPercent}
                 />
               </div>
+              <div>
+                <label htmlFor="fill_method">Fill method: </label>
+                <select name="fill_method" id="" onChange={(ev) => setFillMethod(ev.target.value)}>
+                  <option value="mean">mean</option>
+                  <option value="median">median</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -275,6 +284,7 @@ export default function CreateModel() {
 
             <div className="layer-manipulation-buttons">
               <button
+                className="remove-layer-button"
                 onClick={() => {
                   const updatedLayers = [...layers]
                   updatedLayers.pop()

@@ -33,11 +33,10 @@
 
 .select-model-container{
     width: 20%;
-    margin: 30px auto;
+    margin: 100px auto;
     display:flex;
     align-items: center;
     justify-content: center;
-    margin-top: 10px;
     flex-direction: column;
     padding: 10px;
     box-shadow: 0 0 10px 5px rgb(94, 94, 94);

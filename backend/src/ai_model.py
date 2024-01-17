@@ -125,11 +125,5 @@ class AI_model():
         print(df.columns.tolist())
         result = self.model(torch.from_numpy(df.to_numpy(dtype=np.float32)))
 
-        # Set the threshold (commonly 0.5)
-        threshold = 0.5
-
-        # Convert the probability to a binary answer
-        binary_answer = "yes" if result.item() >= threshold else "no"
-
-        return {"answear" : binary_answer}
+        return {"answer" : result.item()}
 

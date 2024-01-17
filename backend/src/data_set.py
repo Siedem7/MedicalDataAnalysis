@@ -78,8 +78,7 @@ class data_set():
 
     
         self.data = pd.get_dummies(self.data, columns=categorical_columns)
-        output_column = self.data.pop(data_structure['output_column'])
-        self.data.insert(len(self.data.columns), output_column.name, output_column)
+        
 
         #data_structure['categorical_columns'] = [col for col in self.data.columns.tolist() if col not in original_columns]
 
@@ -91,6 +90,8 @@ class data_set():
             self.data[column['name']] = (self.data[column['name']] - self.data[column['name']].min()) / (self.data[column['name']].max() - self.data[column['name']].min())
 
         self.data = self.data.sort_index(axis=1)
+        output_column = self.data.pop(data_structure['output_column'])
+        self.data.insert(len(self.data.columns), output_column.name, output_column)
         self.data_structure = data_structure
         self.is_data_normalized = True
     
