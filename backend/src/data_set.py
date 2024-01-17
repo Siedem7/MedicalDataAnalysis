@@ -21,7 +21,7 @@ class data_set():
     def is_data_norm(self):
         return self.is_data_normalized
 
-    def load_data(self, file_path: str):
+    def load_data(self, file_path: str, method:str):
         """
         Load file content from file.
         
@@ -29,11 +29,25 @@ class data_set():
             file_path (str): path to file with data set.
         """
         self.is_data_normalized = False
-        na_values = ['NA', 'N/A', 'missing', '']
+        na_values = ['NA', 'N/A', 'missing', '', 'NaN']
         self.data = pd.read_csv(file_path, na_values=na_values)
+        
+        print("--------------------")
         print(self.data)
-        self.data = self.data.fillna(self.data.mean())
+        numeric_columns = self.data.select_dtypes(include=['number']).columns
+        categorical_columns = self.data.select_dtypes(exclude=['number']).columns
+
+        # Fill missing values in numeric columns with the mean
+        match method:
+            case "median" : fill_method = self.data[numeric_columns].median()
+            case "mean" : fill_method = self.data[numeric_columns].mean()
+
+        self.data[numeric_columns] = self.data[numeric_columns].fillna(fill_method)
+
+        # Fill missing values in categorical columns with the mode
+        self.data[categorical_columns] = self.data[categorical_columns].apply(lambda x: x.fillna(x.mode().iloc[0]))
         print(self.data)
+        print("--------------------")
 
     
     def normalize_data(self, numerical_columns: list, categorical_columns: list, output_column: str):

@@ -117,7 +117,7 @@ export async function getPermissions(token: string): Promise<string[]> {
     redirect: "follow",
   })
     .then((response) => {
-      if (response.status === 401) {
+      if (response.status === 401 || response.status == 403) {
         window.location.href = "/login";
         throw new Error("Unauthorized");
       } else {

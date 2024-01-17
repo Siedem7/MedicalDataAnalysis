@@ -60,7 +60,7 @@ def create_model():
         abort(status, result)
 
     expected_keys = ["file_id", "numerical_columns", "categorical_columns", "output_column", "epochs", "batch_size",
-                     "model_name", "model_desc", "training_percent", "layers"]
+                     "model_name", "model_desc", "training_percent", "layers", "fill_method"]
     if not any(key in request.json.keys() for key in expected_keys):
         abort(400, description="Missing keys in the request.")
 
@@ -69,7 +69,7 @@ def create_model():
     file_path = file.path
     file_name = os.path.splitext(os.path.basename(file.path))[0]
     data_instance = data_set(name=file_name, description=file.description)
-    data_instance.load_data(file_path=file_path)
+    data_instance.load_data(file_path=file_path, method=request.json["fill_method"])
 
     numerical_columns = request.json["numerical_columns"]
     categorical_columns = request.json["categorical_columns"]
