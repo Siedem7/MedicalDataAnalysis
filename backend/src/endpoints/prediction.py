@@ -38,3 +38,41 @@ def get_input_structure(model_id):
         model = pickle.load(file)
 
     return jsonify(model.data.get_data_structure())
+
+
+def predict(model_id):
+    """
+    Predicts model output based on provided data.
+
+    Endpoint: GET /predict/<model_id>
+
+    Requires:
+    - Authorization header with a valid token
+    - USE_MODEL permission
+
+    Returns:
+    - JSON object with prediction result
+
+    Error Responses:
+    - 403 Forbidden: If user is not logged in or has no permission to access this feature
+    - 404 Not Found: If model with given id does not exist
+    """
+    token = request.headers.get("Authorization")
+    status, result = authorize_permissions(token, ["USE_MODEL"])
+
+    if status != 200:
+        abort(status, result)
+
+    if "data" not in request.json.keys():
+        abort(400, "Missing data in request.")
+
+    try:
+        model_database = db.session.execute(db.select(PredictionModel).filter_by(id=model_id)).scalar_one()
+    except NoResultFound:
+        abort(404, description="Model with given id does not exist")
+
+    with open(model_database.configuration, 'rb') as file:
+        model = pickle.load(file)
+
+        return model.predict(request.json['data'])
+

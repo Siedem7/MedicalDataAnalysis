@@ -29,7 +29,12 @@ class data_set():
             file_path (str): path to file with data set.
         """
         self.is_data_normalized = False
-        self.data =  pd.read_csv(file_path)
+        na_values = ['NA', 'N/A', 'missing', '']
+        self.data = pd.read_csv(file_path, na_values=na_values)
+        print(self.data)
+        self.data = self.data.fillna(self.data.mean())
+        print(self.data)
+
     
     def normalize_data(self, numerical_columns: list, categorical_columns: list, output_column: str):
         """
@@ -42,14 +47,15 @@ class data_set():
         """
         data_structure = dict()
 
-        numercial_columns_list = list()
+        numerical_columns_list = list()
         for column in numerical_columns:
-            numercial_columns_list.append({'name': column,'min': None, 'max': None, 'mean': None, 'median': None})
+            numerical_columns_list.append({'name': column,'min': None, 'max': None, 'mean': None, 'median': None})
 
+
+        data_structure['numerical_columns'] = numerical_columns_list
         data_structure['categorical_columns'] = list()
-        data_structure['numerical_columns'] = numercial_columns_list
         data_structure['output_column'] = output_column
-        
+
         #original_columns = self.data.columns.tolist()
 
         for column  in categorical_columns:
@@ -70,6 +76,7 @@ class data_set():
             column['median'] = float(self.data[column['name']].median())
             self.data[column['name']] = (self.data[column['name']] - self.data[column['name']].min()) / (self.data[column['name']].max() - self.data[column['name']].min())
 
+        self.data = self.data.sort_index(axis=1)
         self.data_structure = data_structure
         self.is_data_normalized = True
     

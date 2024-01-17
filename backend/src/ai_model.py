@@ -1,3 +1,5 @@
+import pandas as pd
+
 from src.data_set import data_set
 from src.socketio_functions import emit_to_socketio
 import torch as torch
@@ -24,7 +26,6 @@ class AI_model():
         self.model : nn.Sequential = None
         self.data : data_set = None
         self.is_model_trained = False
-
 
     def set_structure(self, data, layers):
         """
@@ -59,7 +60,6 @@ class AI_model():
         self.model = model
         self.is_model_trained = False
 
-    
     def create_model(self, epochs, batch_size,  training_procent: float):
         """
         Create model for AI model.
@@ -116,5 +116,20 @@ class AI_model():
         """
         if not self.is_model_trained:
             raise Exception("Model is not trained")
-        return self.model(data)
+
+
+        print(self.data.data.columns.tolist())
+
+        df = pd.DataFrame(data)
+        df = df.sort_index(axis=1)
+        print(df.columns.tolist())
+        result = self.model(torch.from_numpy(df.to_numpy(dtype=np.float32)))
+
+        # Set the threshold (commonly 0.5)
+        threshold = 0.5
+
+        # Convert the probability to a binary answer
+        binary_answer = "yes" if result.item() >= threshold else "no"
+
+        return {"answear" : binary_answer}
 
