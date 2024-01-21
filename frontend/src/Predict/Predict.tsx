@@ -75,7 +75,7 @@ export default function Predict() {
         
         fetch("http://127.0.0.1:5000/predict/" + selectedModel?.id, {...requestOptions, redirect:"follow"})
           .then(response => response.json())
-          .then(result => setProbability(result["answear"]))
+          .then(result => setProbability(result["answer"]))
           .catch(error => console.log('error', error));
         
         setIsPopupOpen(true)
