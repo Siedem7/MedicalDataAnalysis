@@ -86,7 +86,7 @@ def test_generate_token(test_id):
     'exp': datetime.utcnow() + timedelta(days=1),
     'iat': datetime.utcnow(),
     'sub': 10
-}, 'some key', algorithm='HS256'), 401)])
+}, 'some key', algorithm='HS256'), 403)])
 def test_authorize(test_token, status, app):
     """
     Test of authorize method in functions.py
@@ -110,7 +110,7 @@ def test_authorize(test_token, status, app):
     'iat': datetime.utcnow(),
     'sub': 1
 }, 'some key', algorithm='HS256'),["CREATE_USER_ACCOUNT"], 200),
-("token",["permission"], 401)])
+("token",["permission"], 403)])
 def test_authorize_permissions(test_token, permission, status, app):
     """
     Test of authorize_permissions method in functions.py

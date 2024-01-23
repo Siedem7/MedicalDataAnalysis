@@ -9,3 +9,6 @@ start cmd /k run_frontend.bat
 
 REM Run the frontend server
 start cmd /k run_backend.bat
+
+REM Run tests
+start cmd /k run_tests.bat

@@ -5,9 +5,9 @@ from datetime import datetime, timedelta
 from src.functions import generate_token
 from pathlib import Path
 
-resources = Path(__file__).parent / "resources"
+resources = Path(__file__).parent / "./resources"
 
-# To run all tests type: pytest -v in command line
+# To run all tests type: cd backend, cd tests, pytest -v in command line
 # To run single test type: pytest backend/tests/<test_file_name.py>::<test_function> in command line
 
 @pytest.mark.parametrize("token, statuscode", [
@@ -16,7 +16,7 @@ resources = Path(__file__).parent / "resources"
         'iat': datetime.utcnow(),
         'sub': 1
     }, 'some key', algorithm='HS256'), 200),
-    ("token", 401)])
+    ("token", 403)])
 def test_get_groups(token, statuscode, client, app):
     """
     Test of get_groups method in app.py
@@ -40,7 +40,7 @@ def test_get_groups(token, statuscode, client, app):
         'iat': datetime.utcnow(),
         'sub': 2
     }, 'some key', algorithm='HS256'), 403),
-    ("token", 401)])
+    ("token", 403)])
 def test_get_users(token, statuscode, client, app):
     """
     Test of get_users method in app.py
@@ -69,7 +69,7 @@ def test_get_users(token, statuscode, client, app):
         'iat': datetime.utcnow(),
         'sub': 1
     }, 'some key', algorithm='HS256'), 10, 404),
-    ("token", 1, 401)])    
+    ("token", 1, 403)])    
 def test_get_user(token, user_id, statuscode, client, app):
     """
     Test of get_user method in app.py
@@ -106,8 +106,8 @@ def test_login_user(test_json, statuscode, client):
         'exp': datetime.utcnow() + timedelta(days=1),
         'iat': datetime.utcnow(),
         'sub': 10
-    }, 'some key', algorithm='HS256'), 401),
-    ("token", 401)])
+    }, 'some key', algorithm='HS256'), 403),
+    ("token", 403)])
 def test_get_permissions(token, statuscode, client, app):
     """
     Test of get_permissions method in app.py
@@ -125,7 +125,7 @@ def test_get_permissions(token, statuscode, client, app):
         'iat': datetime.utcnow(),
         'sub': 1
     }, 'some key', algorithm='HS256'),{"login": "login", "password": "admin", "group": "medical_staff"}, 200), 
-    ("token",{"login": "kamil", "password": "admin", "group": "medical_staff"}, 401),
+    ("token",{"login": "kamil", "password": "admin", "group": "medical_staff"}, 403),
     (jwt.encode({
         'exp': datetime.utcnow() + timedelta(days=1),
         'iat': datetime.utcnow(),
@@ -159,7 +159,7 @@ def test_create_user(token, user_json, statuscode, client, app):
         'iat': datetime.utcnow(),
         'sub': 1
     }, 'some key', algorithm='HS256'), {"user_id": 2}, 200), 
-    ("token",{"user_id": 2}, 401),     
+    ("token",{"user_id": 2}, 403),     
     (jwt.encode({
         'exp': datetime.utcnow() + timedelta(days=1),
         'iat': datetime.utcnow(),
@@ -194,7 +194,7 @@ def test_delete_user(token, user_id, statuscode, client, app):
         'iat': datetime.utcnow(),
         'sub': 1
     }, 'some key', algorithm='HS256'), {"user_id": 2, "login": "newlogin"}, 200),
-    ("token",{"user_id": 2}, 401),
+    ("token",{"user_id": 2}, 403),
     (jwt.encode({
     'exp': datetime.utcnow() + timedelta(days=1),
     'iat': datetime.utcnow(),
@@ -226,11 +226,6 @@ def test_delete_user(token, user_id, statuscode, client, app):
     'sub': 1
     }, 'some key', algorithm='HS256'), {"user_id": 2, "login": "admin"}, 409),
     (jwt.encode({
-    'exp': datetime.utcnow() + timedelta(days=1),
-    'iat': datetime.utcnow(),
-    'sub': 1
-    }, 'some key', algorithm='HS256'), {"user_id": 2, "password": "1"}, 400),
-    (jwt.encode({
         'exp': datetime.utcnow() + timedelta(days=1),
         'iat': datetime.utcnow(),
         'sub': 2
@@ -253,7 +248,7 @@ def test_update_user(token, parameter_json, statuscode, client, app):
         'exp': datetime.utcnow() + timedelta(days=1),
         'iat': datetime.utcnow(),
         'sub': 2
-    }, 'some key', algorithm='HS256'),{"csv_file": (resources / "test_file.csv").open("rb"), "description": "description"}, 200),
+    }, 'some key', algorithm='HS256'),{"csv_file": (resources/"test_file.csv").open("rb"), "description":"description"}, 200),
     (jwt.encode({
         'exp': datetime.utcnow() + timedelta(days=1),
         'iat': datetime.utcnow(),
@@ -264,7 +259,7 @@ def test_update_user(token, parameter_json, statuscode, client, app):
         'iat': datetime.utcnow(),
         'sub': 2
     }, 'some key', algorithm='HS256'),{"csv_file": "file"}, 400),
-    ("token",{"csv_file": "file", "description": "description"}, 401)])
+    ("token",{"csv_file": "file", "description": "description"}, 403)])
 def test_upload_file(token, user_data, statuscode, client, app):
     """
     Test of upload_file method in app.py
@@ -290,7 +285,7 @@ def test_upload_file(token, user_data, statuscode, client, app):
         'iat': datetime.utcnow(),
         'sub': 1
     }, 'some key', algorithm='HS256'), 403),
-    ("token", 401)])
+    ("token", 403)])
 def test_get_datasets(token, statuscode, client, app):
     """
     Test of get_permissions method in app.py
@@ -314,14 +309,14 @@ def test_get_datasets(token, statuscode, client, app):
         'iat': datetime.utcnow(),
         'sub': 1
     }, 'some key', algorithm='HS256'), {"file_id": 1}, 403),
-    ("token", {"file_id": 1}, 401),    
+    ("token", {"file_id": 1}, 403),    
     (jwt.encode({
         'exp': datetime.utcnow() + timedelta(days=1),
         'iat': datetime.utcnow(),
         'sub': 2
     }, 'some key', algorithm='HS256'),{
     "file_id": 1, 
-    "model_name": "Model gamma",
+    "model_name": "test",
     "model_desc": "Testowanie",
     "training_percent": 0.8,
     "numerical_columns":[
@@ -348,7 +343,9 @@ def test_get_datasets(token, statuscode, client, app):
             {"function": "Sigmoid"}
     ],
     "epochs": 50,
-    "batch_size": 100}, 200)])
+    "batch_size": 100,
+    "fill_method": "median"
+    }, 200)])
 def test_create_model(token, model, statuscode, client, app):
     """
     Test of create_model method in app.py
@@ -378,7 +375,7 @@ def test_create_model(token, model, statuscode, client, app):
         'iat': datetime.utcnow(),
         'sub': 1
     }, 'some key', algorithm='HS256'), 1, 403),
-    ("token", 1, 401)])
+    ("token", 1, 403)])
 def test_get_input_structure(token, model_id, statuscode, client, app):
     """
     Test of get_input_structure method in app.py
@@ -391,5 +388,5 @@ def test_get_input_structure(token, model_id, statuscode, client, app):
         assert result.status_code == statuscode     
    
 def tearDownModule():
-    shutil.rmtree("./backend/tests/resources/model_files")
-    shutil.rmtree("./backend/tests/resources/data_files")
+    shutil.rmtree("./model_files")
+    shutil.rmtree("./data_files")

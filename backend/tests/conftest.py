@@ -10,19 +10,19 @@ def app():
     """
     Method creates flask application for testing purposes
     """
-    app,socket = create_app("sqlite://")
+    app = create_app("sqlite://")
     app.config.update({
         "TESTING": True,
     })
-    app.config["UPLOAD_FOLDER"] =  os.path.join(os.getcwd(), "backend", "tests", "resources", "data_files")
+    app.config["UPLOAD_FOLDER"] =  os.path.join(os.getcwd(), "data_files")
 
     if not os.path.exists(app.config["UPLOAD_FOLDER"]):
-        os.mkdir("./backend/tests/resources/data_files")
+        os.mkdir("./data_files")
 
-    app.config["MODEL_FILES"] = os.path.join(os.getcwd(), "backend", "tests", "resources", "model_files")
+    app.config["MODEL_FILES"] = os.path.join(os.getcwd(), "model_files")
 
     if not os.path.exists(app.config["MODEL_FILES"]):
-        os.mkdir("./backend/tests/resources/model_files")
+        os.mkdir("./model_files")
 
     with app.app_context():
         db.create_all()
@@ -31,7 +31,7 @@ def app():
         database_file = File()
         database_file.description = "test"
         database_file.modify_date = datetime.utcnow()
-        database_file.path = ".\\backend\\tests\\resources\\test_file.csv"
+        database_file.path = ".\\resources\\test_file.csv"
         database_file.user = 1
 
         analyst = User(login="analyst",
@@ -45,7 +45,7 @@ def app():
                 group=3)
         
         model = PredictionModel()
-        model.configuration = ".\\backend\\tests\\resources\\test_model.pkl"
+        model.configuration = ".\\resources\\test_model.pkl"
         model.modify_date = datetime.utcnow()
         model.user = 1
         model.description = "This model is for tests"
